@@ -8,3 +8,8 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
 });
+export default defineConfig({
+  build: {
+    target: 'es2015', // <- This is the fix
+  }
+})
