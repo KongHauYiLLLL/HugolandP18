@@ -1,15 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-});
-export default defineConfig({
   build: {
-    target: 'es2015', // <- This is the fix
-  }
-})
+    target: 'es2015', // ✅ Add this to support older devices
+  },
+});
