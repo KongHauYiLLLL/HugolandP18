@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Enemy, PowerSkills } from '../types/game';
-import { Sword, Shield, Heart, Brain, Clock, Zap, Skull, Flame, Droplets, Plus } from 'lucide-react';
-import { TriviaQuestion, getQuestionByZone } from '../utils/triviaQuestions';
+import { Enemy } from '../types/game';
+import { Sword, Shield, Heart, Brain, Clock, Zap, Skull, Flame } from 'lucide-react';
+import { TriviaQuestion, getQuestionByZone, checkAnswer } from '../utils/triviaQuestions';
 
 interface CombatProps {
   enemy: Enemy;
@@ -24,7 +24,6 @@ interface CombatProps {
     best: number;
     multiplier: number;
   };
-  powerSkills: PowerSkills;
 }
 
 export const Combat: React.FC<CombatProps> = ({ 
@@ -33,11 +32,11 @@ export const Combat: React.FC<CombatProps> = ({
   onAttack, 
   combatLog, 
   gameMode,
-  knowledgeStreak,
-  powerSkills 
+  knowledgeStreak
 }) => {
   const [currentQuestion, setCurrentQuestion] = useState<TriviaQuestion | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [typedAnswer, setTypedAnswer] = useState<string>('');
   const [isAnswering, setIsAnswering] = useState(false);
   const [timeLeft, setTimeLeft] = useState(5);
   const [showResult, setShowResult] = useState(false);
@@ -49,6 +48,7 @@ export const Combat: React.FC<CombatProps> = ({
     const question = getQuestionByZone(enemy.zone);
     setCurrentQuestion(question);
     setSelectedAnswer(null);
+    setTypedAnswer('');
     setTimeLeft(questionTime);
     setShowResult(false);
     setLastAnswerCorrect(null);
@@ -74,9 +74,16 @@ export const Combat: React.FC<CombatProps> = ({
     if (isAnswering || !currentQuestion) return;
 
     setIsAnswering(true);
-    setSelectedAnswer(answerIndex);
+    
+    let userAnswer: string | number;
+    if (currentQuestion.type === 'multiple-choice') {
+      setSelectedAnswer(answerIndex);
+      userAnswer = answerIndex ?? -1;
+    } else {
+      userAnswer = typedAnswer;
+    }
 
-    const isCorrect = answerIndex === currentQuestion.correctAnswer;
+    const isCorrect = checkAnswer(currentQuestion, userAnswer);
     setLastAnswerCorrect(isCorrect);
     setShowResult(true);
 
@@ -86,6 +93,7 @@ export const Combat: React.FC<CombatProps> = ({
       const newQuestion = getQuestionByZone(enemy.zone);
       setCurrentQuestion(newQuestion);
       setSelectedAnswer(null);
+      setTypedAnswer('');
       setIsAnswering(false);
       setTimeLeft(questionTime);
       setShowResult(false);
@@ -163,7 +171,6 @@ export const Combat: React.FC<CombatProps> = ({
         </div>
       </div>
 
-
       {/* Health Bars */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
         <div className="bg-black/30 p-3 sm:p-4 rounded-lg">
@@ -194,9 +201,6 @@ export const Combat: React.FC<CombatProps> = ({
           <div className="flex items-center gap-2 mb-2">
             <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
             <span className="text-white font-semibold text-sm sm:text-base">{enemy.name}</span>
-            {enemy.isPoisoned && (
-              <Droplets className="w-4 h-4 text-green-400 animate-pulse" />
-            )}
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2 sm:h-3">
             <div 
@@ -215,11 +219,6 @@ export const Combat: React.FC<CombatProps> = ({
               {enemy.def}
             </span>
           </div>
-          {enemy.isPoisoned && (
-            <p className="text-green-400 text-xs mt-1">
-              💀 Poisoned ({enemy.poisonTurns} turns)
-            </p>
-          )}
         </div>
       </div>
 
@@ -244,46 +243,76 @@ export const Combat: React.FC<CombatProps> = ({
         <div className={`bg-black/40 p-4 sm:p-6 rounded-lg border-2 ${getDifficultyBorder(currentQuestion.difficulty)} mb-4`}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs sm:text-sm text-gray-400">{currentQuestion.category}</span>
-            <span className={`text-xs sm:text-sm font-semibold ${getDifficultyColor(currentQuestion.difficulty)}`}>
-              {currentQuestion.difficulty.toUpperCase()}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs sm:text-sm font-semibold ${getDifficultyColor(currentQuestion.difficulty)}`}>
+                {currentQuestion.difficulty.toUpperCase()}
+              </span>
+              <span className="text-xs text-purple-400">
+                {currentQuestion.type === 'multiple-choice' ? 'Multiple Choice' : 'Type Answer'}
+              </span>
+            </div>
           </div>
           <p className="text-white font-semibold text-sm sm:text-lg mb-4 leading-relaxed">
             {currentQuestion.question}
           </p>
 
-          {/* Answer Options */}
-          <div className="grid grid-cols-1 gap-2 sm:gap-3">
-            {currentQuestion.options.map((option, index) => {
-              let buttonClass = 'bg-gray-700 hover:bg-gray-600 text-white';
-              
-              if (showResult) {
-                if (index === currentQuestion.correctAnswer) {
-                  buttonClass = 'bg-green-600 text-white';
-                } else if (index === selectedAnswer && selectedAnswer !== currentQuestion.correctAnswer) {
-                  buttonClass = 'bg-red-600 text-white';
-                } else {
-                  buttonClass = 'bg-gray-600 text-gray-400';
+          {/* Answer Input */}
+          {currentQuestion.type === 'multiple-choice' ? (
+            <div className="grid grid-cols-1 gap-2 sm:gap-3">
+              {currentQuestion.options?.map((option, index) => {
+                let buttonClass = 'bg-gray-700 hover:bg-gray-600 text-white';
+                
+                if (showResult) {
+                  if (index === currentQuestion.correctAnswer) {
+                    buttonClass = 'bg-green-600 text-white';
+                  } else if (index === selectedAnswer && selectedAnswer !== currentQuestion.correctAnswer) {
+                    buttonClass = 'bg-red-600 text-white';
+                  } else {
+                    buttonClass = 'bg-gray-600 text-gray-400';
+                  }
+                } else if (selectedAnswer === index) {
+                  buttonClass = 'bg-blue-600 text-white';
                 }
-              } else if (selectedAnswer === index) {
-                buttonClass = 'bg-blue-600 text-white';
-              }
 
-              return (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(index)}
-                  disabled={isAnswering || showResult}
-                  className={`p-2 sm:p-3 rounded-lg font-semibold transition-all duration-200 text-left text-xs sm:text-sm ${buttonClass} ${
-                    !isAnswering && !showResult ? 'hover:scale-102' : 'cursor-not-allowed'
-                  }`}
-                >
-                  <span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span>
-                  {option}
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(index)}
+                    disabled={isAnswering || showResult}
+                    className={`p-2 sm:p-3 rounded-lg font-semibold transition-all duration-200 text-left text-xs sm:text-sm ${buttonClass} ${
+                      !isAnswering && !showResult ? 'hover:scale-102' : 'cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span>
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <input
+                type="text"
+                value={typedAnswer}
+                onChange={(e) => setTypedAnswer(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && !isAnswering && !showResult && handleAnswer(null)}
+                disabled={isAnswering || showResult}
+                placeholder="Type your answer here..."
+                className="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none text-sm sm:text-base"
+              />
+              <button
+                onClick={() => handleAnswer(null)}
+                disabled={isAnswering || showResult || !typedAnswer.trim()}
+                className={`w-full py-2 rounded-lg font-semibold transition-all duration-200 text-sm sm:text-base ${
+                  !isAnswering && !showResult && typedAnswer.trim()
+                    ? 'bg-purple-600 text-white hover:bg-purple-500'
+                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Submit Answer
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Result Feedback */}
@@ -302,7 +331,10 @@ export const Combat: React.FC<CombatProps> = ({
             </p>
             {!lastAnswerCorrect && (
               <p className="text-gray-300 text-xs sm:text-sm mt-1">
-                Correct answer: {String.fromCharCode(65 + currentQuestion.correctAnswer)}. {currentQuestion.options[currentQuestion.correctAnswer]}
+                Correct answer: {currentQuestion.type === 'multiple-choice' 
+                  ? `${String.fromCharCode(65 + (currentQuestion.correctAnswer as number))}. ${currentQuestion.options?.[currentQuestion.correctAnswer as number]}`
+                  : currentQuestion.correctAnswer
+                }
               </p>
             )}
           </div>

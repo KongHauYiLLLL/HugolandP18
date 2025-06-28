@@ -1,4 +1,4 @@
-import { Weapon, Armor, Enemy } from '../types/game';
+import { Weapon, Armor, Enemy, RelicItem } from '../types/game';
 
 const weaponNames = {
   common: ['Rusty Sword', 'Wooden Club', 'Stone Axe', 'Iron Dagger'],
@@ -16,11 +16,35 @@ const armorNames = {
   mythical: ['Abyssal Aegis', 'Stellar Fortress', 'Quantum Shield', 'Infinity Guard', 'Void Mantle', 'Cosmic Barrier', 'Reality Armor', 'Dimensional Cloak'],
 };
 
+const relicNames = {
+  weapons: [
+    'Ancient Blade of Yojef',
+    'Primordial Sword',
+    'Relic of the First War',
+    'Eternal Flame Sword',
+    'Void Touched Blade',
+    'Starfall Weapon',
+    'Temporal Slicer',
+    'Reality Breaker'
+  ],
+  armor: [
+    'Guardian\'s Ancient Shield',
+    'Primordial Armor',
+    'Relic of Protection',
+    'Eternal Barrier',
+    'Void Touched Guard',
+    'Starfall Aegis',
+    'Temporal Ward',
+    'Reality Defender'
+  ]
+};
+
 const enemyNames = [
   'Goblin Warrior', 'Shadow Wolf', 'Stone Golem', 'Fire Imp',
   'Ice Troll', 'Dark Mage', 'Lightning Drake', 'Void Wraith',
   'Crystal Beast', 'Ancient Dragon', 'Chaos Lord', 'Nightmare King',
-  'Abyssal Terror', 'Cosmic Horror', 'Reality Bender', 'Dimension Lord'
+  'Abyssal Terror', 'Cosmic Horror', 'Reality Bender', 'Dimension Lord',
+  'Eternal Guardian', 'Void Emperor', 'Chaos Incarnate', 'Reality Destroyer'
 ];
 
 const getDurabilityByRarity = (rarity: string): number => {
@@ -34,7 +58,7 @@ const getDurabilityByRarity = (rarity: string): number => {
   return durabilityMap[rarity as keyof typeof durabilityMap] || 50;
 };
 
-export const generateWeapon = (forceChroma = false, forceRarity?: string): Weapon => {
+export const generateWeapon = (forceChroma = false, forceRarity?: string, forceEnchanted = false): Weapon => {
   let rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'mythical';
   
   if (forceRarity) {
@@ -61,13 +85,23 @@ export const generateWeapon = (forceChroma = false, forceRarity?: string): Weapo
   
   const baseAtkMap = { common: 15, rare: 25, epic: 40, legendary: 60, mythical: 100 };
   const upgradeCostMap = { common: 5, rare: 10, epic: 20, legendary: 40, mythical: 50 };
-  const baseAtk = baseAtkMap[rarity] + Math.floor(Math.random() * 10);
-  const sellPrice = Math.floor(baseAtk * 2);
+  let baseAtk = baseAtkMap[rarity] + Math.floor(Math.random() * 10);
+  
+  // Check for enchantment (5% chance or forced)
+  const isEnchanted = forceEnchanted || Math.random() < 0.05;
+  let enchantmentMultiplier = 1;
+  
+  if (isEnchanted) {
+    enchantmentMultiplier = 2;
+    baseAtk *= 2;
+  }
+  
+  const sellPrice = Math.floor(baseAtk * 0.5); // 25% of original cost calculation
   const maxDurability = getDurabilityByRarity(rarity);
 
   return {
     id: Math.random().toString(36).substr(2, 9),
-    name,
+    name: isEnchanted ? `Enchanted ${name}` : name,
     rarity,
     baseAtk,
     level: 1,
@@ -76,32 +110,12 @@ export const generateWeapon = (forceChroma = false, forceRarity?: string): Weapo
     isChroma: false,
     durability: maxDurability,
     maxDurability,
+    isEnchanted,
+    enchantmentMultiplier,
   };
 };
 
-export const generateMythicalWeapon = (): Weapon => {
-  const names = weaponNames.mythical;
-  const name = names[Math.floor(Math.random() * names.length)];
-  
-  const baseAtk = 100 + Math.floor(Math.random() * 75);
-  const sellPrice = Math.floor(baseAtk * 15);
-  const maxDurability = getDurabilityByRarity('mythical');
-
-  return {
-    id: Math.random().toString(36).substr(2, 9),
-    name,
-    rarity: 'mythical',
-    baseAtk,
-    level: 1,
-    upgradeCost: 50,
-    sellPrice,
-    isChroma: false,
-    durability: maxDurability,
-    maxDurability,
-  };
-};
-
-export const generateArmor = (forceChroma = false, forceRarity?: string): Armor => {
+export const generateArmor = (forceChroma = false, forceRarity?: string, forceEnchanted = false): Armor => {
   let rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'mythical';
   
   if (forceRarity) {
@@ -128,13 +142,23 @@ export const generateArmor = (forceChroma = false, forceRarity?: string): Armor 
   
   const baseDefMap = { common: 8, rare: 15, epic: 25, legendary: 40, mythical: 70 };
   const upgradeCostMap = { common: 5, rare: 10, epic: 20, legendary: 40, mythical: 50 };
-  const baseDef = baseDefMap[rarity] + Math.floor(Math.random() * 5);
-  const sellPrice = Math.floor(baseDef * 3);
+  let baseDef = baseDefMap[rarity] + Math.floor(Math.random() * 5);
+  
+  // Check for enchantment (5% chance or forced)
+  const isEnchanted = forceEnchanted || Math.random() < 0.05;
+  let enchantmentMultiplier = 1;
+  
+  if (isEnchanted) {
+    enchantmentMultiplier = 2;
+    baseDef *= 2;
+  }
+  
+  const sellPrice = Math.floor(baseDef * 0.75); // 25% of original cost calculation
   const maxDurability = getDurabilityByRarity(rarity);
 
   return {
     id: Math.random().toString(36).substr(2, 9),
-    name,
+    name: isEnchanted ? `Enchanted ${name}` : name,
     rarity,
     baseDef,
     level: 1,
@@ -143,45 +167,65 @@ export const generateArmor = (forceChroma = false, forceRarity?: string): Armor 
     isChroma: false,
     durability: maxDurability,
     maxDurability,
+    isEnchanted,
+    enchantmentMultiplier,
   };
+};
+
+export const generateRelicItem = (): RelicItem => {
+  const isWeapon = Math.random() < 0.5;
+  const names = isWeapon ? relicNames.weapons : relicNames.armor;
+  const name = names[Math.floor(Math.random() * names.length)];
+  
+  if (isWeapon) {
+    const baseAtk = 80 + Math.floor(Math.random() * 40); // 80-120 ATK
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      name,
+      type: 'weapon',
+      baseAtk,
+      level: 1,
+      upgradeCost: 25,
+      cost: baseAtk * 5,
+      description: 'A powerful relic weapon from ancient times'
+    };
+  } else {
+    const baseDef = 60 + Math.floor(Math.random() * 30); // 60-90 DEF
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      name,
+      type: 'armor',
+      baseDef,
+      level: 1,
+      upgradeCost: 25,
+      cost: baseDef * 5,
+      description: 'A powerful relic armor from ancient times'
+    };
+  }
+};
+
+export const generateMythicalWeapon = (): Weapon => {
+  return generateWeapon(false, 'mythical');
 };
 
 export const generateMythicalArmor = (): Armor => {
-  const names = armorNames.mythical;
-  const name = names[Math.floor(Math.random() * names.length)];
-  
-  const baseDef = 70 + Math.floor(Math.random() * 45);
-  const sellPrice = Math.floor(baseDef * 10);
-  const maxDurability = getDurabilityByRarity('mythical');
-
-  return {
-    id: Math.random().toString(36).substr(2, 9),
-    name,
-    rarity: 'mythical',
-    baseDef,
-    level: 1,
-    upgradeCost: 50,
-    sellPrice,
-    isChroma: false,
-    durability: maxDurability,
-    maxDurability,
-  };
+  return generateArmor(false, 'mythical');
 };
 
 export const generateEnemy = (zone: number): Enemy => {
-  const name = enemyNames[Math.min(zone - 1, enemyNames.length - 1)];
+  const nameIndex = Math.min(Math.floor((zone - 1) / 5), enemyNames.length - 1);
+  const name = enemyNames[nameIndex];
   
+  // Infinite scaling formula
   let hp = 200 + (zone * 15);
   let atk = 20 + (zone * 8);
   let def = Math.floor(zone * 2);
   
+  // Exponential scaling for higher zones
   if (zone >= 10) {
-    hp *= 2;
-  }
-  
-  if (zone >= 30) {
-    atk *= 2;
-    def *= 2;
+    hp = Math.floor(hp * Math.pow(1.1, zone - 10));
+    atk = Math.floor(atk * Math.pow(1.08, zone - 10));
+    def = Math.floor(def * Math.pow(1.05, zone - 10));
   }
   
   return {
@@ -193,6 +237,7 @@ export const generateEnemy = (zone: number): Enemy => {
     zone,
     isPoisoned: false,
     poisonTurns: 0,
+    canDropItems: zone >= 10,
   };
 };
 
@@ -246,22 +291,46 @@ export const getRarityGlow = (rarity: string): string => {
   }
 };
 
-export const calculateResearchBonus = (level: number, tier: number): number => {
-  const baseBonus = level * 5;
-  const tierBonus = tier * 15;
-  return baseBonus + tierBonus;
+export const calculateResearchBonus = (level: number): number => {
+  return level * 10; // 10% per level
 };
 
-export const calculateResearchCost = (level: number, tier: number): number => {
-  const levelInTier = level % 10;
-  return 150 + (levelInTier * 50);
+export const calculateResearchCost = (level: number): number => {
+  return 100 + (level * 25); // Increasing cost
 };
 
-export const repairItem = (item: Weapon | Armor, gemCost: number): Weapon | Armor => {
-  return {
-    ...item,
-    durability: item.maxDurability
-  };
+export const canRepairWithAnvil = (item1: Weapon | Armor, item2: Weapon | Armor): boolean => {
+  return item1.name === item2.name && 
+         item1.rarity === item2.rarity && 
+         item1.id !== item2.id;
+};
+
+export const repairWithAnvil = (item1: Weapon | Armor, item2: Weapon | Armor): Weapon | Armor => {
+  const repairedItem = { ...item1 };
+  repairedItem.durability = Math.min(
+    repairedItem.maxDurability,
+    item1.durability + item2.durability
+  );
+  return repairedItem;
+};
+
+export const canResetItem = (items: (Weapon | Armor)[], targetItem: Weapon | Armor): boolean => {
+  const sameTypeAndRarity = items.filter(item => 
+    item.rarity === targetItem.rarity &&
+    ('baseAtk' in item) === ('baseAtk' in targetItem) &&
+    item.id !== targetItem.id
+  );
+  return sameTypeAndRarity.length >= 2;
+};
+
+export const resetItem = (targetItem: Weapon | Armor): Weapon | Armor => {
+  const resetItem = { ...targetItem };
+  resetItem.durability = resetItem.maxDurability;
+  resetItem.level = 1;
+  resetItem.upgradeCost = ('baseAtk' in resetItem) ? 
+    { common: 5, rare: 10, epic: 20, legendary: 40, mythical: 50 }[resetItem.rarity] :
+    { common: 5, rare: 10, epic: 20, legendary: 40, mythical: 50 }[resetItem.rarity];
+  return resetItem;
 };
 
 export const getRepairCost = (item: Weapon | Armor): number => {

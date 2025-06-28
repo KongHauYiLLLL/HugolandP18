@@ -1,6 +1,7 @@
 export interface GameState {
   coins: number;
   gems: number;
+  shinyGems: number;
   zone: number;
   playerStats: PlayerStats;
   inventory: Inventory;
@@ -14,10 +15,11 @@ export interface GameState {
   knowledgeStreak: KnowledgeStreak;
   gameMode: GameMode;
   statistics: Statistics;
-  powerSkills: PowerSkill[];
   cheats: CheatSettings;
   mining: Mining;
   promoCodes: PromoCodeState;
+  yojefMarket: YojefMarket;
+  playerTags: PlayerTag[];
 }
 
 export interface PlayerStats {
@@ -31,16 +33,27 @@ export interface PlayerStats {
 }
 
 export interface Research {
-  level: number;
-  tier: number; // Every 10 levels = new tier
-  totalSpent: number;
+  atk: {
+    level: number;
+    totalSpent: number;
+  };
+  def: {
+    level: number;
+    totalSpent: number;
+  };
+  hp: {
+    level: number;
+    totalSpent: number;
+  };
 }
 
 export interface Inventory {
   weapons: Weapon[];
   armor: Armor[];
+  relics: RelicItem[];
   currentWeapon: Weapon | null;
   currentArmor: Armor | null;
+  equippedRelics: RelicItem[];
 }
 
 export interface Weapon {
@@ -54,6 +67,8 @@ export interface Weapon {
   isChroma?: boolean;
   durability: number;
   maxDurability: number;
+  isEnchanted?: boolean;
+  enchantmentMultiplier?: number;
 }
 
 export interface Armor {
@@ -67,6 +82,20 @@ export interface Armor {
   isChroma?: boolean;
   durability: number;
   maxDurability: number;
+  isEnchanted?: boolean;
+  enchantmentMultiplier?: number;
+}
+
+export interface RelicItem {
+  id: string;
+  name: string;
+  type: 'weapon' | 'armor';
+  baseAtk?: number;
+  baseDef?: number;
+  level: number;
+  upgradeCost: number;
+  cost: number;
+  description: string;
 }
 
 export interface Enemy {
@@ -78,6 +107,7 @@ export interface Enemy {
   zone: number;
   isPoisoned?: boolean;
   poisonTurns?: number;
+  canDropItems?: boolean;
 }
 
 export interface ChestReward {
@@ -133,11 +163,12 @@ export interface GameMode {
 export interface Statistics {
   totalQuestionsAnswered: number;
   correctAnswers: number;
-  totalPlayTime: number; // in seconds
+  totalPlayTime: number;
   zonesReached: number;
   itemsCollected: number;
   coinsEarned: number;
   gemsEarned: number;
+  shinyGemsEarned: number;
   chestsOpened: number;
   accuracyByCategory: {
     [category: string]: {
@@ -148,26 +179,6 @@ export interface Statistics {
   sessionStartTime: Date;
 }
 
-export interface PowerSkill {
-  id: string;
-  name: string;
-  description: string;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'mythical';
-  tier: number;
-  isActive: boolean;
-  effect: PowerSkillEffect;
-}
-
-export interface PowerSkillEffect {
-  type: 'poison' | 'guardian' | 'crown' | 'hp_boost' | 'war_veteran' | 'dodge' | 'free_answer' | 'heal' | 'shield' | 'crit' | 'vampire' | 'rage' | 'lucky' | 'scholar' | 'berserker' | 'fortress' | 'swift' | 'midas' | 'phoenix' | 'time_warp' | 'elemental' | 'assassin';
-  value?: number;
-  duration?: number;
-  cooldown?: number;
-  currentCooldown?: number;
-  stacks?: number;
-  maxStacks?: number;
-}
-
 export interface CheatSettings {
   infiniteCoins: boolean;
   infiniteGems: boolean;
@@ -175,7 +186,7 @@ export interface CheatSettings {
 }
 
 export interface Mining {
-  efficiency: number; // How many gems per mine action
+  efficiency: number;
   tools: {
     basic_pickaxe: boolean;
     steel_pickaxe: boolean;
@@ -183,6 +194,7 @@ export interface Mining {
     mythical_pickaxe: boolean;
   };
   totalGemsMined: number;
+  totalShinyGemsMined: number;
 }
 
 export interface MiningTool {
@@ -211,4 +223,28 @@ export interface PromoCode {
   isUsed: boolean;
 }
 
-export type PowerSkills = PowerSkill[];
+export interface YojefMarket {
+  items: RelicItem[];
+  lastRefresh: Date;
+  nextRefresh: Date;
+}
+
+export interface PlayerTag {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  unlocked: boolean;
+  unlockedAt?: Date;
+  color: string;
+}
+
+export interface TriviaQuestion {
+  id: string;
+  question: string;
+  type: 'multiple-choice' | 'type-answer';
+  options?: string[];
+  correctAnswer: number | string;
+  category: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+}

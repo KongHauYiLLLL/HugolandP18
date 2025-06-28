@@ -14,12 +14,13 @@ import { Tutorial } from './components/Tutorial';
 import { CheatPanel } from './components/CheatPanel';
 import { Mining } from './components/Mining';
 import { PromoCode } from './components/PromoCode';
+import { YojefMarket } from './components/YojefMarket';
 import { FloatingIcons } from './components/FloatingIcons';
 import { FloatingText, ScreenShake } from './components/VisualEffects';
 import { Shield, Package, User, Play, RotateCcw, Brain, Crown, Trophy, Book, BarChart3, Settings, Pickaxe, Gift } from 'lucide-react';
 
 type GameView = 'stats' | 'shop' | 'inventory' | 'research' | 'mining' | 'promo';
-type ModalView = 'achievements' | 'collection' | 'statistics' | 'gameMode' | 'pokyegMarket' | 'tutorial' | 'cheats' | 'resetConfirm' | null;
+type ModalView = 'achievements' | 'collection' | 'statistics' | 'gameMode' | 'pokyegMarket' | 'tutorial' | 'cheats' | 'resetConfirm' | 'yojefMarket' | null;
 
 function App() {
   const {
@@ -43,9 +44,16 @@ function App() {
     toggleCheat,
     generateCheatItem,
     mineGem,
-    purchaseMiningTool,
+    exchangeShinyGems,
     redeemPromoCode,
     discardItem,
+    repairWithAnvil,
+    resetItemWithSacrifice,
+    purchaseRelic,
+    upgradeRelic,
+    equipRelic,
+    unequipRelic,
+    sellRelic,
   } = useGameState();
 
   const [currentView, setCurrentView] = useState<GameView>('stats');
@@ -79,10 +87,11 @@ function App() {
               <ul className="text-purple-200 text-xs sm:text-sm space-y-1">
                 <li>• Answer trivia questions to defeat enemies</li>
                 <li>• Collect powerful weapons and armor</li>
-                <li>• Mine gems and upgrade your equipment</li>
+                <li>• Mine gems and find rare shiny gems</li>
                 <li>• Unlock achievements and build knowledge streaks</li>
                 <li>• Explore multiple game modes and challenges</li>
-                <li>• Progress through endless zones of adventure</li>
+                <li>• Progress through infinite zones of adventure</li>
+                <li>• Discover ancient relics in the Yojef Market</li>
               </ul>
             </div>
           </div>
@@ -103,11 +112,6 @@ function App() {
     );
   }
 
-  const handleFooterClick = (type: 'tutorial' | 'cheats') => {
-    console.log('Footer clicked:', type);
-    setCurrentModal(type);
-  };
-
   const handleResetGame = () => {
     setCurrentModal('resetConfirm');
   };
@@ -127,7 +131,6 @@ function App() {
           combatLog={gameState.combatLog}
           gameMode={gameState.gameMode}
           knowledgeStreak={gameState.knowledgeStreak}
-          powerSkills={gameState.powerSkills}
         />
       );
     }
@@ -141,34 +144,9 @@ function App() {
               zone={gameState.zone}
               coins={gameState.coins}
               gems={gameState.gems}
+              shinyGems={gameState.shinyGems}
+              playerTags={gameState.playerTags}
             />
-            
-            {/* Power Skills Display */}
-            {gameState.powerSkills.length > 0 && (
-              <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-3 sm:p-4 rounded-lg border border-indigo-500/50">
-                <h3 className="text-white font-bold mb-3 text-sm sm:text-lg flex items-center gap-2">
-                  ⚡ Active Power Skills
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {gameState.powerSkills.map((skill) => (
-                    <div key={skill.id} className="bg-black/30 p-2 rounded border border-purple-500/30">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-xs font-bold ${
-                          skill.rarity === 'mythical' ? 'text-red-400' :
-                          skill.rarity === 'legendary' ? 'text-yellow-400' :
-                          skill.rarity === 'epic' ? 'text-purple-400' :
-                          skill.rarity === 'rare' ? 'text-blue-400' : 'text-gray-400'
-                        }`}>
-                          {skill.rarity.toUpperCase()}
-                        </span>
-                      </div>
-                      <p className="text-white font-semibold text-xs">{skill.name}</p>
-                      <p className="text-gray-300 text-xs">{skill.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
             
             {/* Knowledge Streak Display */}
             {gameState.knowledgeStreak.current > 0 && (
@@ -253,6 +231,12 @@ function App() {
             onUpgradeArmor={upgradeArmor}
             onSellWeapon={sellWeapon}
             onSellArmor={sellArmor}
+            onRepairWithAnvil={repairWithAnvil}
+            onResetItem={resetItemWithSacrifice}
+            onUpgradeRelic={upgradeRelic}
+            onEquipRelic={equipRelic}
+            onUnequipRelic={unequipRelic}
+            onSellRelic={sellRelic}
           />
         );
       case 'research':
@@ -262,7 +246,6 @@ function App() {
             coins={gameState.coins}
             onUpgradeResearch={upgradeResearch}
             isPremium={gameState.isPremium}
-            powerSkills={gameState.powerSkills}
           />
         );
       case 'mining':
@@ -270,8 +253,9 @@ function App() {
           <Mining
             mining={gameState.mining}
             gems={gameState.gems}
+            shinyGems={gameState.shinyGems}
             onMineGem={mineGem}
-            onPurchaseTool={purchaseMiningTool}
+            onExchangeShinyGems={exchangeShinyGems}
           />
         );
       case 'promo':
@@ -342,6 +326,17 @@ function App() {
             onClose={() => setCurrentModal(null)}
           />
         );
+      case 'yojefMarket':
+        return (
+          <YojefMarket
+            relicItems={gameState.yojefMarket.items}
+            gems={gameState.gems}
+            equippedRelicsCount={gameState.inventory.equippedRelics.length}
+            onPurchaseRelic={purchaseRelic}
+            onClose={() => setCurrentModal(null)}
+            nextRefresh={gameState.yojefMarket.nextRefresh}
+          />
+        );
       case 'resetConfirm':
         return (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
@@ -356,11 +351,12 @@ function App() {
                 </p>
                 <div className="bg-black/30 p-3 rounded-lg mb-6 text-left">
                   <ul className="text-red-300 text-sm space-y-1">
-                    <li>• All coins and gems</li>
-                    <li>• All weapons and armor</li>
+                    <li>• All coins, gems, and shiny gems</li>
+                    <li>• All weapons, armor, and relics</li>
                     <li>• Zone progress and achievements</li>
                     <li>• Research levels and statistics</li>
                     <li>• Collection book progress</li>
+                    <li>• Player tags and streaks</li>
                   </ul>
                 </div>
                 <p className="text-red-400 font-bold text-sm mb-6">
@@ -435,11 +431,11 @@ function App() {
             </button>
             
             <button
-              onClick={() => setCurrentModal('collection')}
+              onClick={() => setCurrentModal('yojefMarket')}
               className="flex items-center gap-1 text-indigo-300 hover:text-indigo-200 transition-colors"
             >
               <Book className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>{gameState.collectionBook.totalWeaponsFound + gameState.collectionBook.totalArmorFound}</span>
+              <span>Collect</span>
             </button>
             
             <button
@@ -486,34 +482,6 @@ function App() {
         <div className="max-w-4xl mx-auto">
           {renderCurrentView()}
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="text-center py-3 sm:py-4 text-gray-400 text-xs sm:text-sm px-4 relative z-10">
-        Welcome to{' '}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleFooterClick('tutorial');
-          }}
-          className="text-gray-400 hover:text-purple-400 transition-colors cursor-pointer underline decoration-dotted font-semibold"
-        >
-          Hugoland
-        </button>
-        {' '}- Where knowledge meets{' '}
-        <button
-          onClick={() => setCurrentModal('pokyegMarket')}
-          className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer underline decoration-dotted"
-        >
-          power
-        </button>
-        ! 
-        {gameState.isPremium && <span className="text-yellow-400 ml-2">👑 Premium Member</span>}
-        {gameState.knowledgeStreak.current > 0 && (
-          <span className="text-yellow-400 ml-2">🔥 {gameState.knowledgeStreak.current} Streak</span>
-        )}
-        <span className="text-purple-400 ml-2">Mode: {gameState.gameMode.current.toUpperCase()}</span>
       </div>
 
       {/* Modals */}

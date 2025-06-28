@@ -1,7 +1,7 @@
-import React from 'react';
-import { Inventory as InventoryType, Weapon, Armor } from '../types/game';
-import { Sword, Shield, Gem, Star, Coins, Sparkles, Wrench } from 'lucide-react';
-import { getRarityColor, getRarityBorder, getRarityGlow, getRepairCost } from '../utils/gameUtils';
+import React, { useState } from 'react';
+import { Inventory as InventoryType, Weapon, Armor, RelicItem } from '../types/game';
+import { Sword, Shield, Gem, Star, Coins, Sparkles, Wrench, Package, Hammer, RotateCcw } from 'lucide-react';
+import { getRarityColor, getRarityBorder, getRarityGlow, getRepairCost, canRepairWithAnvil, canResetItem } from '../utils/gameUtils';
 
 interface InventoryProps {
   inventory: InventoryType;
@@ -12,6 +12,12 @@ interface InventoryProps {
   onUpgradeArmor: (armorId: string) => void;
   onSellWeapon: (weaponId: string) => void;
   onSellArmor: (armorId: string) => void;
+  onRepairWithAnvil: (item1Id: string, item2Id: string, type: 'weapon' | 'armor') => void;
+  onResetItem: (itemId: string, type: 'weapon' | 'armor') => void;
+  onUpgradeRelic: (relicId: string) => void;
+  onEquipRelic: (relicId: string) => void;
+  onUnequipRelic: (relicId: string) => void;
+  onSellRelic: (relicId: string) => void;
 }
 
 export const Inventory: React.FC<InventoryProps> = ({
@@ -23,7 +29,16 @@ export const Inventory: React.FC<InventoryProps> = ({
   onUpgradeArmor,
   onSellWeapon,
   onSellArmor,
+  onRepairWithAnvil,
+  onResetItem,
+  onUpgradeRelic,
+  onEquipRelic,
+  onUnequipRelic,
+  onSellRelic,
 }) => {
+  const [activeTab, setActiveTab] = useState<'weapons' | 'armor' | 'relics'>('weapons');
+  const [selectedForAnvil, setSelectedForAnvil] = useState<{ item1?: Weapon | Armor; item2?: Weapon | Armor; type?: 'weapon' | 'armor' }>({});
+
   const getDurabilityColor = (durability: number, maxDurability: number) => {
     const percentage = durability / maxDurability;
     if (percentage > 0.7) return 'text-green-400';
@@ -38,6 +53,332 @@ export const Inventory: React.FC<InventoryProps> = ({
     return 'bg-red-500';
   };
 
+  const handleAnvilRepair = () => {
+    if (selectedForAnvil.item1 && selectedForAnvil.item2 && selectedForAnvil.type) {
+      onRepairWithAnvil(selectedForAnvil.item1.id, selectedForAnvil.item2.id, selectedForAnvil.type);
+      setSelectedForAnvil({});
+    }
+  };
+
+  const renderEquippedSection = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+      <div className="bg-black/30 p-3 sm:p-4 rounded-lg border border-orange-500/50">
+        <h3 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
+          <Sword className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+          Equipped Weapon
+        </h3>
+        {inventory.currentWeapon ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <p className={`font-semibold text-sm sm:text-base ${getRarityColor(inventory.currentWeapon.rarity)}`}>
+                {inventory.currentWeapon.name}
+              </p>
+              {inventory.currentWeapon.isChroma && (
+                <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
+              )}
+              {inventory.currentWeapon.isEnchanted && (
+                <Star className="w-4 h-4 text-cyan-400 animate-pulse" />
+              )}
+            </div>
+            <p className="text-white text-sm sm:text-base">ATK: {inventory.currentWeapon.baseAtk + (inventory.currentWeapon.level - 1) * 10}</p>
+            <p className="text-gray-300 text-xs sm:text-sm">Level {inventory.currentWeapon.level}</p>
+            
+            {/* Durability */}
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-gray-300">Durability</span>
+                <span className={getDurabilityColor(inventory.currentWeapon.durability, inventory.currentWeapon.maxDurability)}>
+                  {inventory.currentWeapon.durability}/{inventory.currentWeapon.maxDurability}
+                </span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-300 ${getDurabilityBarColor(inventory.currentWeapon.durability, inventory.currentWeapon.maxDurability)}`}
+                  style={{ width: `${(inventory.currentWeapon.durability / inventory.currentWeapon.maxDurability) * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-gray-400 text-sm">No weapon equipped</p>
+        )}
+      </div>
+
+      <div className="bg-black/30 p-3 sm:p-4 rounded-lg border border-blue-500/50">
+        <h3 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
+          <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+          Equipped Armor
+        </h3>
+        {inventory.currentArmor ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <p className={`font-semibold text-sm sm:text-base ${getRarityColor(inventory.currentArmor.rarity)}`}>
+                {inventory.currentArmor.name}
+              </p>
+              {inventory.currentArmor.isChroma && (
+                <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
+              )}
+              {inventory.currentArmor.isEnchanted && (
+                <Star className="w-4 h-4 text-cyan-400 animate-pulse" />
+              )}
+            </div>
+            <p className="text-white text-sm sm:text-base">DEF: {inventory.currentArmor.baseDef + (inventory.currentArmor.level - 1) * 5}</p>
+            <p className="text-gray-300 text-xs sm:text-sm">Level {inventory.currentArmor.level}</p>
+            
+            {/* Durability */}
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-gray-300">Durability</span>
+                <span className={getDurabilityColor(inventory.currentArmor.durability, inventory.currentArmor.maxDurability)}>
+                  {inventory.currentArmor.durability}/{inventory.currentArmor.maxDurability}
+                </span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-300 ${getDurabilityBarColor(inventory.currentArmor.durability, inventory.currentArmor.maxDurability)}`}
+                  style={{ width: `${(inventory.currentArmor.durability / inventory.currentArmor.maxDurability) * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-gray-400 text-sm">No armor equipped</p>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderItemGrid = (items: (Weapon | Armor)[], type: 'weapon' | 'armor') => (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 max-h-64 sm:max-h-80 overflow-y-auto">
+      {items.map((item) => (
+        <div 
+          key={item.id} 
+          className={`bg-black/40 p-3 sm:p-4 rounded-lg border-2 ${getRarityBorder(item.rarity)} ${getRarityGlow(item.rarity)} ${item.isChroma ? 'animate-pulse' : ''} ${
+            selectedForAnvil.item1?.id === item.id || selectedForAnvil.item2?.id === item.id ? 'ring-2 ring-yellow-400' : ''
+          }`}
+        >
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <p className={`font-semibold text-sm sm:text-base truncate ${getRarityColor(item.rarity)}`}>
+                  {item.name}
+                </p>
+                {item.isChroma && (
+                  <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
+                )}
+                {item.isEnchanted && (
+                  <Star className="w-4 h-4 text-cyan-400 animate-pulse" />
+                )}
+              </div>
+              <p className="text-white text-sm sm:text-base mb-1">
+                {type === 'weapon' ? `ATK: ${(item as Weapon).baseAtk + (item.level - 1) * 10}` : `DEF: ${(item as Armor).baseDef + (item.level - 1) * 5}`}
+              </p>
+              <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-300 mb-1">
+                <Star className="w-3 h-3 sm:w-4 sm:h-4" />
+                Level {item.level}
+              </div>
+              
+              {/* Durability */}
+              <div className="mb-2">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-gray-300">Durability</span>
+                  <span className={getDurabilityColor(item.durability, item.maxDurability)}>
+                    {item.durability}/{item.maxDurability}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-1">
+                  <div 
+                    className={`h-1 rounded-full transition-all duration-300 ${getDurabilityBarColor(item.durability, item.maxDurability)}`}
+                    style={{ width: `${(item.durability / item.maxDurability) * 100}%` }}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-1 text-xs sm:text-sm text-yellow-400">
+                <Coins className="w-3 h-3 sm:w-4 sm:h-4" />
+                Sell: {item.sellPrice}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => type === 'weapon' ? onEquipWeapon(item as Weapon) : onEquipArmor(item as Armor)}
+              disabled={(type === 'weapon' ? inventory.currentWeapon?.id : inventory.currentArmor?.id) === item.id}
+              className={`px-3 py-2 text-sm rounded font-semibold transition-all ${
+                (type === 'weapon' ? inventory.currentWeapon?.id : inventory.currentArmor?.id) === item.id
+                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : type === 'weapon' ? 'bg-orange-600 text-white hover:bg-orange-500' : 'bg-blue-600 text-white hover:bg-blue-500'
+              }`}
+            >
+              {(type === 'weapon' ? inventory.currentWeapon?.id : inventory.currentArmor?.id) === item.id ? 'Equipped' : 'Equip'}
+            </button>
+            
+            <div className="flex gap-2">
+              <button
+                onClick={() => type === 'weapon' ? onUpgradeWeapon(item.id) : onUpgradeArmor(item.id)}
+                disabled={gems < item.upgradeCost}
+                className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all flex items-center gap-1 justify-center ${
+                  gems >= item.upgradeCost
+                    ? 'bg-purple-600 text-white hover:bg-purple-500'
+                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <Gem className="w-3 h-3" />
+                {item.upgradeCost}
+              </button>
+              
+              <button
+                onClick={() => type === 'weapon' ? onSellWeapon(item.id) : onSellArmor(item.id)}
+                disabled={(type === 'weapon' ? inventory.currentWeapon?.id : inventory.currentArmor?.id) === item.id}
+                className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all ${
+                  (type === 'weapon' ? inventory.currentWeapon?.id : inventory.currentArmor?.id) === item.id
+                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 text-white hover:bg-red-500'
+                }`}
+              >
+                Sell
+              </button>
+            </div>
+
+            {/* Anvil and Reset buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (!selectedForAnvil.item1) {
+                    setSelectedForAnvil({ item1: item, type });
+                  } else if (!selectedForAnvil.item2 && selectedForAnvil.item1.id !== item.id) {
+                    setSelectedForAnvil({ ...selectedForAnvil, item2: item });
+                  } else {
+                    setSelectedForAnvil({});
+                  }
+                }}
+                className="flex-1 px-2 py-1 text-xs rounded font-semibold bg-yellow-600 text-white hover:bg-yellow-500 transition-all flex items-center gap-1 justify-center"
+              >
+                <Hammer className="w-3 h-3" />
+                Anvil
+              </button>
+              
+              <button
+                onClick={() => onResetItem(item.id, type)}
+                disabled={!canResetItem(type === 'weapon' ? inventory.weapons : inventory.armor, item)}
+                className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all flex items-center gap-1 justify-center ${
+                  canResetItem(type === 'weapon' ? inventory.weapons : inventory.armor, item)
+                    ? 'bg-cyan-600 text-white hover:bg-cyan-500'
+                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <RotateCcw className="w-3 h-3" />
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderRelicGrid = () => (
+    <div className="space-y-4">
+      {/* Equipped Relics */}
+      <div>
+        <h3 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
+          <Package className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
+          Equipped Relics ({inventory.equippedRelics.length}/5)
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+          {inventory.equippedRelics.map((relic) => (
+            <div key={relic.id} className="bg-gradient-to-br from-indigo-900/50 to-purple-900/50 p-3 sm:p-4 rounded-lg border-2 border-indigo-500/50">
+              <div className="flex items-center gap-2 mb-2">
+                {relic.type === 'weapon' ? (
+                  <Sword className="w-4 h-4 text-orange-400" />
+                ) : (
+                  <Shield className="w-4 h-4 text-blue-400" />
+                )}
+                <h4 className="text-white font-bold text-sm">{relic.name}</h4>
+              </div>
+              <p className="text-gray-300 text-xs mb-2">{relic.description}</p>
+              <p className="text-white text-sm mb-2">
+                {relic.type === 'weapon' ? `ATK: ${relic.baseAtk! + (relic.level - 1) * 15}` : `DEF: ${relic.baseDef! + (relic.level - 1) * 10}`}
+              </p>
+              <p className="text-gray-300 text-xs mb-3">Level {relic.level}</p>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onUpgradeRelic(relic.id)}
+                  disabled={gems < relic.upgradeCost}
+                  className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all flex items-center gap-1 justify-center ${
+                    gems >= relic.upgradeCost
+                      ? 'bg-purple-600 text-white hover:bg-purple-500'
+                      : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  <Gem className="w-3 h-3" />
+                  {relic.upgradeCost}
+                </button>
+                <button
+                  onClick={() => onUnequipRelic(relic.id)}
+                  className="flex-1 px-2 py-1 text-xs rounded font-semibold bg-red-600 text-white hover:bg-red-500 transition-all"
+                >
+                  Unequip
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Unequipped Relics */}
+      {inventory.relics.filter(r => !inventory.equippedRelics.some(er => er.id === r.id)).length > 0 && (
+        <div>
+          <h3 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
+            <Package className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+            Unequipped Relics
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+            {inventory.relics.filter(r => !inventory.equippedRelics.some(er => er.id === r.id)).map((relic) => (
+              <div key={relic.id} className="bg-black/40 p-3 sm:p-4 rounded-lg border border-gray-600">
+                <div className="flex items-center gap-2 mb-2">
+                  {relic.type === 'weapon' ? (
+                    <Sword className="w-4 h-4 text-orange-400" />
+                  ) : (
+                    <Shield className="w-4 h-4 text-blue-400" />
+                  )}
+                  <h4 className="text-white font-bold text-sm">{relic.name}</h4>
+                </div>
+                <p className="text-gray-300 text-xs mb-2">{relic.description}</p>
+                <p className="text-white text-sm mb-2">
+                  {relic.type === 'weapon' ? `ATK: ${relic.baseAtk! + (relic.level - 1) * 15}` : `DEF: ${relic.baseDef! + (relic.level - 1) * 10}`}
+                </p>
+                <p className="text-gray-300 text-xs mb-3">Level {relic.level}</p>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onEquipRelic(relic.id)}
+                    disabled={inventory.equippedRelics.length >= 5}
+                    className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all ${
+                      inventory.equippedRelics.length < 5
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-500'
+                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {inventory.equippedRelics.length >= 5 ? 'Limit Reached' : 'Equip'}
+                  </button>
+                  <button
+                    onClick={() => onSellRelic(relic.id)}
+                    className="flex-1 px-2 py-1 text-xs rounded font-semibold bg-red-600 text-white hover:bg-red-500 transition-all"
+                  >
+                    Destroy
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 sm:p-6 rounded-lg shadow-2xl">
       <div className="text-center mb-4 sm:mb-6">
@@ -49,285 +390,140 @@ export const Inventory: React.FC<InventoryProps> = ({
       </div>
 
       {/* Currently Equipped */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="bg-black/30 p-3 sm:p-4 rounded-lg border border-orange-500/50">
+      {renderEquippedSection()}
+
+      {/* Anvil Section */}
+      {(selectedForAnvil.item1 || selectedForAnvil.item2) && (
+        <div className="bg-yellow-900/30 p-4 rounded-lg border border-yellow-500/50 mb-4">
+          <h3 className="text-yellow-400 font-bold mb-3 flex items-center gap-2">
+            <Hammer className="w-5 h-5" />
+            Anvil Repair
+          </h3>
+          <div className="space-y-2">
+            <p className="text-white text-sm">
+              Selected: {selectedForAnvil.item1?.name || 'None'} 
+              {selectedForAnvil.item2 && ` + ${selectedForAnvil.item2.name}`}
+            </p>
+            {selectedForAnvil.item1 && selectedForAnvil.item2 && (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAnvilRepair}
+                  disabled={!canRepairWithAnvil(selectedForAnvil.item1, selectedForAnvil.item2)}
+                  className={`px-4 py-2 rounded font-semibold text-sm ${
+                    canRepairWithAnvil(selectedForAnvil.item1, selectedForAnvil.item2)
+                      ? 'bg-yellow-600 text-white hover:bg-yellow-500'
+                      : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  Repair with Anvil
+                </button>
+                <button
+                  onClick={() => setSelectedForAnvil({})}
+                  className="px-4 py-2 rounded font-semibold text-sm bg-gray-600 text-white hover:bg-gray-500"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+            <p className="text-yellow-300 text-xs">
+              Select two identical items to repair the first one using the second.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Tab Navigation */}
+      <div className="flex gap-2 mb-4">
+        {[
+          { key: 'weapons', label: 'Weapons', count: inventory.weapons.length, icon: Sword },
+          { key: 'armor', label: 'Armor', count: inventory.armor.length, icon: Shield },
+          { key: 'relics', label: 'Relics', count: inventory.relics.length, icon: Package }
+        ].map(({ key, label, count, icon: Icon }) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key as any)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+              activeTab === key
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            {label}
+            <span className="bg-black/30 px-2 py-0.5 rounded-full text-xs">
+              {count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'weapons' && (
+        <div>
           <h3 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
             <Sword className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
-            Equipped Weapon
+            Weapons ({inventory.weapons.length})
           </h3>
-          {inventory.currentWeapon ? (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <p className={`font-semibold text-sm sm:text-base ${getRarityColor(inventory.currentWeapon.rarity)}`}>
-                  {inventory.currentWeapon.name}
-                </p>
-                {inventory.currentWeapon.isChroma && (
-                  <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
-                )}
-              </div>
-              <p className="text-white text-sm sm:text-base">ATK: {inventory.currentWeapon.baseAtk + (inventory.currentWeapon.level - 1) * 10}</p>
-              <p className="text-gray-300 text-xs sm:text-sm">Level {inventory.currentWeapon.level}</p>
-              
-              {/* Durability */}
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-300">Durability</span>
-                  <span className={getDurabilityColor(inventory.currentWeapon.durability, inventory.currentWeapon.maxDurability)}>
-                    {inventory.currentWeapon.durability}/{inventory.currentWeapon.maxDurability}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${getDurabilityBarColor(inventory.currentWeapon.durability, inventory.currentWeapon.maxDurability)}`}
-                    style={{ width: `${(inventory.currentWeapon.durability / inventory.currentWeapon.maxDurability) * 100}%` }}
-                  />
-                </div>
-                {inventory.currentWeapon.durability < inventory.currentWeapon.maxDurability && (
-                  <p className="text-xs text-yellow-400 mt-1">
-                    <Wrench className="w-3 h-3 inline mr-1" />
-                    Repair cost: {getRepairCost(inventory.currentWeapon)} gems
-                  </p>
-                )}
-              </div>
-            </div>
+          {inventory.weapons.length > 0 ? (
+            renderItemGrid(inventory.weapons, 'weapon')
           ) : (
-            <p className="text-gray-400 text-sm">No weapon equipped</p>
+            <div className="text-center py-8">
+              <Sword className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+              <p className="text-gray-400 text-lg">No weapons found</p>
+              <p className="text-gray-500 text-sm">Open chests to find weapons!</p>
+            </div>
           )}
         </div>
+      )}
 
-        <div className="bg-black/30 p-3 sm:p-4 rounded-lg border border-blue-500/50">
+      {activeTab === 'armor' && (
+        <div>
           <h3 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
             <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
-            Equipped Armor
+            Armor ({inventory.armor.length})
           </h3>
-          {inventory.currentArmor ? (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <p className={`font-semibold text-sm sm:text-base ${getRarityColor(inventory.currentArmor.rarity)}`}>
-                  {inventory.currentArmor.name}
-                </p>
-                {inventory.currentArmor.isChroma && (
-                  <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
-                )}
-              </div>
-              <p className="text-white text-sm sm:text-base">DEF: {inventory.currentArmor.baseDef + (inventory.currentArmor.level - 1) * 5}</p>
-              <p className="text-gray-300 text-xs sm:text-sm">Level {inventory.currentArmor.level}</p>
-              
-              {/* Durability */}
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-300">Durability</span>
-                  <span className={getDurabilityColor(inventory.currentArmor.durability, inventory.currentArmor.maxDurability)}>
-                    {inventory.currentArmor.durability}/{inventory.currentArmor.maxDurability}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${getDurabilityBarColor(inventory.currentArmor.durability, inventory.currentArmor.maxDurability)}`}
-                    style={{ width: `${(inventory.currentArmor.durability / inventory.currentArmor.maxDurability) * 100}%` }}
-                  />
-                </div>
-                {inventory.currentArmor.durability < inventory.currentArmor.maxDurability && (
-                  <p className="text-xs text-yellow-400 mt-1">
-                    <Wrench className="w-3 h-3 inline mr-1" />
-                    Repair cost: {getRepairCost(inventory.currentArmor)} gems
-                  </p>
-                )}
-              </div>
-            </div>
+          {inventory.armor.length > 0 ? (
+            renderItemGrid(inventory.armor, 'armor')
           ) : (
-            <p className="text-gray-400 text-sm">No armor equipped</p>
+            <div className="text-center py-8">
+              <Shield className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+              <p className="text-gray-400 text-lg">No armor found</p>
+              <p className="text-gray-500 text-sm">Open chests to find armor!</p>
+            </div>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Weapons */}
-      <div className="mb-4 sm:mb-6">
-        <h3 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
-          <Sword className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
-          Weapons ({inventory.weapons.length})
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 max-h-64 sm:max-h-80 overflow-y-auto">
-          {inventory.weapons.map((weapon) => (
-            <div 
-              key={weapon.id} 
-              className={`bg-black/40 p-3 sm:p-4 rounded-lg border-2 ${getRarityBorder(weapon.rarity)} ${getRarityGlow(weapon.rarity)} ${weapon.isChroma ? 'animate-pulse' : ''}`}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className={`font-semibold text-sm sm:text-base truncate ${getRarityColor(weapon.rarity)}`}>
-                      {weapon.name}
-                    </p>
-                    {weapon.isChroma && (
-                      <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
-                    )}
-                  </div>
-                  <p className="text-white text-sm sm:text-base mb-1">
-                    ATK: {weapon.baseAtk + (weapon.level - 1) * 10}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-300 mb-1">
-                    <Star className="w-3 h-3 sm:w-4 sm:h-4" />
-                    Level {weapon.level}
-                  </div>
-                  
-                  {/* Durability */}
-                  <div className="mb-2">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-300">Durability</span>
-                      <span className={getDurabilityColor(weapon.durability, weapon.maxDurability)}>
-                        {weapon.durability}/{weapon.maxDurability}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-1">
-                      <div 
-                        className={`h-1 rounded-full transition-all duration-300 ${getDurabilityBarColor(weapon.durability, weapon.maxDurability)}`}
-                        style={{ width: `${(weapon.durability / weapon.maxDurability) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-1 text-xs sm:text-sm text-yellow-400">
-                    <Coins className="w-3 h-3 sm:w-4 sm:h-4" />
-                    Sell: {weapon.sellPrice}
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => onEquipWeapon(weapon)}
-                  disabled={inventory.currentWeapon?.id === weapon.id}
-                  className={`px-3 py-2 text-sm rounded font-semibold transition-all ${
-                    inventory.currentWeapon?.id === weapon.id
-                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                      : 'bg-orange-600 text-white hover:bg-orange-500'
-                  }`}
-                >
-                  {inventory.currentWeapon?.id === weapon.id ? 'Equipped' : 'Equip'}
-                </button>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onUpgradeWeapon(weapon.id)}
-                    disabled={gems < weapon.upgradeCost}
-                    className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all flex items-center gap-1 justify-center ${
-                      gems >= weapon.upgradeCost
-                        ? 'bg-purple-600 text-white hover:bg-purple-500'
-                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    <Gem className="w-3 h-3" />
-                    {weapon.upgradeCost}
-                  </button>
-                  <button
-                    onClick={() => onSellWeapon(weapon.id)}
-                    disabled={inventory.currentWeapon?.id === weapon.id}
-                    className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all ${
-                      inventory.currentWeapon?.id === weapon.id
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                        : 'bg-red-600 text-white hover:bg-red-500'
-                    }`}
-                  >
-                    Sell
-                  </button>
-                </div>
-              </div>
+      {activeTab === 'relics' && (
+        <div>
+          <h3 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
+            <Package className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
+            Ancient Relics ({inventory.relics.length})
+          </h3>
+          {inventory.relics.length > 0 ? (
+            renderRelicGrid()
+          ) : (
+            <div className="text-center py-8">
+              <Package className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+              <p className="text-gray-400 text-lg">No relics found</p>
+              <p className="text-gray-500 text-sm">Visit the Yojef Market to find ancient relics!</p>
             </div>
-          ))}
+          )}
         </div>
-      </div>
+      )}
 
-      {/* Armor */}
-      <div>
-        <h3 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
-          <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
-          Armor ({inventory.armor.length})
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 max-h-64 sm:max-h-80 overflow-y-auto">
-          {inventory.armor.map((armor) => (
-            <div 
-              key={armor.id} 
-              className={`bg-black/40 p-3 sm:p-4 rounded-lg border-2 ${getRarityBorder(armor.rarity)} ${getRarityGlow(armor.rarity)} ${armor.isChroma ? 'animate-pulse' : ''}`}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className={`font-semibold text-sm sm:text-base truncate ${getRarityColor(armor.rarity)}`}>
-                      {armor.name}
-                    </p>
-                    {armor.isChroma && (
-                      <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
-                    )}
-                  </div>
-                  <p className="text-white text-sm sm:text-base mb-1">
-                    DEF: {armor.baseDef + (armor.level - 1) * 5}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-300 mb-1">
-                    <Star className="w-3 h-3 sm:w-4 sm:h-4" />
-                    Level {armor.level}
-                  </div>
-                  
-                  {/* Durability */}
-                  <div className="mb-2">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-300">Durability</span>
-                      <span className={getDurabilityColor(armor.durability, armor.maxDurability)}>
-                        {armor.durability}/{armor.maxDurability}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-1">
-                      <div 
-                        className={`h-1 rounded-full transition-all duration-300 ${getDurabilityBarColor(armor.durability, armor.maxDurability)}`}
-                        style={{ width: `${(armor.durability / armor.maxDurability) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-1 text-xs sm:text-sm text-yellow-400">
-                    <Coins className="w-3 h-3 sm:w-4 sm:h-4" />
-                    Sell: {armor.sellPrice}
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => onEquipArmor(armor)}
-                  disabled={inventory.currentArmor?.id === armor.id}
-                  className={`px-3 py-2 text-sm rounded font-semibold transition-all ${
-                    inventory.currentArmor?.id === armor.id
-                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-500'
-                  }`}
-                >
-                  {inventory.currentArmor?.id === armor.id ? 'Equipped' : 'Equip'}
-                </button>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onUpgradeArmor(armor.id)}
-                    disabled={gems < armor.upgradeCost}
-                    className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all flex items-center gap-1 justify-center ${
-                      gems >= armor.upgradeCost
-                        ? 'bg-purple-600 text-white hover:bg-purple-500'
-                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    <Gem className="w-3 h-3" />
-                    {armor.upgradeCost}
-                  </button>
-                  <button
-                    onClick={() => onSellArmor(armor.id)}
-                    disabled={inventory.currentArmor?.id === armor.id}
-                    className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all ${
-                      inventory.currentArmor?.id === armor.id
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                        : 'bg-red-600 text-white hover:bg-red-500'
-                    }`}
-                  >
-                    Sell
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+      {/* Info */}
+      <div className="mt-6 text-center">
+        <div className="bg-black/30 p-3 rounded-lg">
+          <p className="text-xs sm:text-sm text-gray-300 mb-2">
+            💡 <strong>New Features:</strong>
+          </p>
+          <div className="text-xs text-gray-400 space-y-1">
+            <p>• <strong>Anvil:</strong> Repair items by merging two identical items</p>
+            <p>• <strong>Reset:</strong> Reset items to level 1 but keep ATK/DEF (costs 2 items of same rarity)</p>
+            <p>• <strong>Enchanted Items:</strong> 5% chance from chests, double ATK/DEF</p>
+            <p>• <strong>Relics:</strong> Powerful ancient items from the Yojef Market (max 5 equipped)</p>
+          </div>
         </div>
       </div>
     </div>
