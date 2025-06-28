@@ -101,22 +101,5 @@ export const ScreenShake: React.FC<ScreenShakeProps> = ({ trigger, onComplete })
 
 // Add CSS animations to the global styles
 const style = document.createElement('style');
-style.textContent = `
-  @keyframes floatUp {
-    0% {
-      opacity: 1;
-      transform: translate(-50%, -50%) translateY(0px) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(-50%, -50%) translateY(-100px) scale(1.2);
-    }
-  }
-  
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-    20%, 40%, 60%, 80% { transform: translateX(2px); }
-  }
-`;
+style.textContent = ``;
 document.head.appendChild(style);
