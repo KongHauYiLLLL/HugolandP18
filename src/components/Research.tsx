@@ -146,3 +146,31 @@ export const Research: React.FC<ResearchProps> = ({
     </div>
   );
 };
+
+// Usage of the Research component with ErrorBoundary
+const App = () => {
+  const researchData = {
+    atk: { level: 1, totalSpent: 100 },
+    def: { level: 1, totalSpent: 100 },
+    hp: { level: 1, totalSpent: 100 },
+  };
+  const coins = 200;
+  const isPremium = false;
+
+  const handleUpgrade = (type: 'atk' | 'def' | 'hp') => {
+    // Upgrade logic here
+  };
+
+  return (
+    <ErrorBoundary>
+      <Research 
+        research={researchData} 
+        coins={coins} 
+        onUpgradeResearch={handleUpgrade} 
+        isPremium={isPremium} 
+      />
+    </ErrorBoundary>
+  );
+};
+
+export default App;
