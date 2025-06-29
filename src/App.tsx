@@ -332,6 +332,7 @@ function App() {
         return (
           <YojefMarket
             relicItems={gameState.yojefMarket.items}
+            coins={gameState.coins}
             gems={gameState.gems}
             equippedRelicsCount={gameState.inventory.equippedRelics.length}
             onPurchaseRelic={purchaseRelic}
