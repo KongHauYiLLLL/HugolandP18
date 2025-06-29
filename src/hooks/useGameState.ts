@@ -247,6 +247,14 @@ export const useGameState = () => {
             },
             playerTags: parsedState.playerTags || initializePlayerTags(),
             shinyGems: parsedState.shinyGems || 0,
+            inventory: {
+              ...initialInventory,
+              ...parsedState.inventory,
+              weapons: parsedState.inventory?.weapons || [],
+              armor: parsedState.inventory?.armor || [],
+              relics: parsedState.inventory?.relics || [],
+              equippedRelics: parsedState.inventory?.equippedRelics || [],
+            },
           });
         } else {
           setGameState({
