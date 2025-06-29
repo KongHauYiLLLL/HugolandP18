@@ -17,6 +17,7 @@ import { PromoCode } from './components/PromoCode';
 import { YojefMarket } from './components/YojefMarket';
 import { FloatingIcons } from './components/FloatingIcons';
 import { FloatingText, ScreenShake } from './components/VisualEffects';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { Shield, Package, User, Play, RotateCcw, Brain, Crown, Trophy, Book, BarChart3, Settings, Pickaxe, Gift } from 'lucide-react';
 
 type GameView = 'stats' | 'shop' | 'inventory' | 'research' | 'mining' | 'promo';
@@ -390,6 +391,9 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
       <FloatingIcons />
+      
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
       
       {/* Visual Effects */}
       {visualEffects.showFloatingText && (
