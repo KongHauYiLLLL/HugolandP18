@@ -18,7 +18,8 @@ import { YojefMarket } from './components/YojefMarket';
 import { FloatingIcons } from './components/FloatingIcons';
 import { FloatingText, ScreenShake } from './components/VisualEffects';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
-import { Shield, Package, User, Play, RotateCcw, Brain, Crown, Trophy, Book, BarChart3, Settings, Pickaxe, Gift } from 'lucide-react';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { Shield, Package, User, Play, RotateCcw, Brain, Crown, Trophy, Book, BarChart3, Settings, Pickaxe, Gift, AlertTriangle } from 'lucide-react';
 
 type GameView = 'stats' | 'shop' | 'inventory' | 'research' | 'mining' | 'promo';
 type ModalView = 'achievements' | 'collection' | 'statistics' | 'gameMode' | 'pokyegMarket' | 'tutorial' | 'cheats' | 'resetConfirm' | 'yojefMarket' | null;
@@ -27,6 +28,7 @@ function App() {
   const {
     gameState,
     isLoading,
+    error,
     visualEffects,
     clearVisualEffect,
     equipWeapon,
@@ -72,44 +74,69 @@ function App() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-900 via-gray-900 to-black flex items-center justify-center p-4">
+        <div className="bg-black/50 p-6 sm:p-8 rounded-lg border border-red-500/50 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-white" />
+          </div>
+          
+          <h1 className="text-white font-bold text-xl mb-2">Game Error</h1>
+          <p className="text-gray-300 text-sm mb-6">{error}</p>
+          
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full py-3 bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold rounded-lg hover:from-red-500 hover:to-red-400 transition-all duration-200 flex items-center gap-2 justify-center"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reload Game
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Show welcome screen for new players
   if (showWelcome && gameState.zone === 1 && gameState.coins === 100) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-        <FloatingIcons />
-        <div className="text-center max-w-md mx-auto relative z-10">
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">🏰 Welcome to Hugoland! 🗡️</h1>
-            <p className="text-purple-300 text-base sm:text-lg mb-4 sm:mb-6">
-              The ultimate fantasy adventure game where knowledge is your greatest weapon!
-            </p>
-            <div className="bg-black/30 p-3 sm:p-4 rounded-lg border border-purple-500/50 mb-4 sm:mb-6">
-              <h3 className="text-white font-bold mb-2 text-sm sm:text-base">🎮 What awaits you:</h3>
-              <ul className="text-purple-200 text-xs sm:text-sm space-y-1">
-                <li>• Answer trivia questions to defeat enemies</li>
-                <li>• Collect powerful weapons and armor</li>
-                <li>• Mine gems and find rare shiny gems</li>
-                <li>• Unlock achievements and build knowledge streaks</li>
-                <li>• Explore multiple game modes and challenges</li>
-                <li>• Progress through infinite zones of adventure</li>
-                <li>• Discover ancient relics in the Yojef Market</li>
-              </ul>
+      <ErrorBoundary>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+          <FloatingIcons />
+          <div className="text-center max-w-md mx-auto relative z-10">
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">🏰 Welcome to Hugoland! 🗡️</h1>
+              <p className="text-purple-300 text-base sm:text-lg mb-4 sm:mb-6">
+                The ultimate fantasy adventure game where knowledge is your greatest weapon!
+              </p>
+              <div className="bg-black/30 p-3 sm:p-4 rounded-lg border border-purple-500/50 mb-4 sm:mb-6">
+                <h3 className="text-white font-bold mb-2 text-sm sm:text-base">🎮 What awaits you:</h3>
+                <ul className="text-purple-200 text-xs sm:text-sm space-y-1">
+                  <li>• Answer trivia questions to defeat enemies</li>
+                  <li>• Collect powerful weapons and armor</li>
+                  <li>• Mine gems and find rare shiny gems</li>
+                  <li>• Unlock achievements and build knowledge streaks</li>
+                  <li>• Explore multiple game modes and challenges</li>
+                  <li>• Progress through infinite zones of adventure</li>
+                  <li>• Discover ancient relics in the Yojef Market</li>
+                </ul>
+              </div>
             </div>
+            
+            <button
+              onClick={() => setShowWelcome(false)}
+              className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-200 flex items-center gap-3 justify-center text-base sm:text-lg"
+            >
+              <Play className="w-5 h-5 sm:w-6 sm:h-6" />
+              Start Your Adventure
+            </button>
+            
+            <p className="text-gray-400 text-xs sm:text-sm mt-4">
+              Begin your journey in the magical world of Hugoland
+            </p>
           </div>
-          
-          <button
-            onClick={() => setShowWelcome(false)}
-            className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-200 flex items-center gap-3 justify-center text-base sm:text-lg"
-          >
-            <Play className="w-5 h-5 sm:w-6 sm:h-6" />
-            Start Your Adventure
-          </button>
-          
-          <p className="text-gray-400 text-xs sm:text-sm mt-4">
-            Begin your journey in the magical world of Hugoland
-          </p>
         </div>
-      </div>
+      </ErrorBoundary>
     );
   }
 
@@ -389,108 +416,110 @@ function App() {
   const unlockedAchievements = gameState.achievements.filter(a => a.unlocked).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
-      <FloatingIcons />
-      
-      {/* PWA Install Prompt */}
-      <PWAInstallPrompt />
-      
-      {/* Visual Effects */}
-      {visualEffects.showFloatingText && (
-        <FloatingText
-          text={visualEffects.floatingText}
-          color={visualEffects.floatingTextColor}
-          onComplete={() => clearVisualEffect('text')}
-        />
-      )}
-      {visualEffects.showScreenShake && (
-        <ScreenShake
-          trigger={visualEffects.showScreenShake}
-          onComplete={() => clearVisualEffect('shake')}
-        />
-      )}
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
+        <FloatingIcons />
+        
+        {/* PWA Install Prompt */}
+        <PWAInstallPrompt />
+        
+        {/* Visual Effects */}
+        {visualEffects.showFloatingText && (
+          <FloatingText
+            text={visualEffects.floatingText}
+            color={visualEffects.floatingTextColor}
+            onComplete={() => clearVisualEffect('text')}
+          />
+        )}
+        {visualEffects.showScreenShake && (
+          <ScreenShake
+            trigger={visualEffects.showScreenShake}
+            onComplete={() => clearVisualEffect('shake')}
+          />
+        )}
 
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-800 via-violet-800 to-purple-800 shadow-2xl relative z-10">
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-6">
-          <div className="flex items-center justify-between mb-3 sm:mb-6">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-white">
-                🏰 Hugoland 🗡️
-              </h1>
-              {gameState.isPremium && (
-                <Crown className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-yellow-400 animate-pulse" />
-              )}
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-800 via-violet-800 to-purple-800 shadow-2xl relative z-10">
+          <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-6">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-white">
+                  🏰 Hugoland 🗡️
+                </h1>
+                {gameState.isPremium && (
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-yellow-400 animate-pulse" />
+                )}
+              </div>
             </div>
-          </div>
-          
-          {/* Quick Stats Bar */}
-          <div className="flex justify-center items-center gap-2 sm:gap-4 mb-3 sm:mb-4 text-xs sm:text-sm">
-            <button
-              onClick={() => setCurrentModal('achievements')}
-              className="flex items-center gap-1 text-yellow-300 hover:text-yellow-200 transition-colors"
-            >
-              <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>{unlockedAchievements}/{gameState.achievements.length}</span>
-            </button>
             
-            <button
-              onClick={() => setCurrentModal('yojefMarket')}
-              className="flex items-center gap-1 text-indigo-300 hover:text-indigo-200 transition-colors"
-            >
-              <Book className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>Collect</span>
-            </button>
-            
-            <button
-              onClick={() => setCurrentModal('statistics')}
-              className="flex items-center gap-1 text-blue-300 hover:text-blue-200 transition-colors"
-            >
-              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>{Math.round((gameState.statistics.correctAnswers / Math.max(gameState.statistics.totalQuestionsAnswered, 1)) * 100)}%</span>
-            </button>
-          </div>
-          
-          {/* Navigation */}
-          <nav className="flex justify-center space-x-1 sm:space-x-2 overflow-x-auto pb-2">
-            {[
-              { id: 'stats', label: 'Hero', icon: User },
-              { id: 'research', label: 'Research', icon: Brain },
-              { id: 'shop', label: 'Shop', icon: Package },
-              { id: 'inventory', label: 'Inventory', icon: Shield },
-              { id: 'mining', label: 'Mining', icon: Pickaxe },
-              { id: 'promo', label: 'Promo', icon: Gift },
-            ].map(({ id, label, icon: Icon }) => (
+            {/* Quick Stats Bar */}
+            <div className="flex justify-center items-center gap-2 sm:gap-4 mb-3 sm:mb-4 text-xs sm:text-sm">
               <button
-                key={id}
-                onClick={() => setCurrentView(id as GameView)}
-                disabled={gameState.inCombat}
-                className={`px-2 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap ${
-                  currentView === id
-                    ? 'bg-white text-purple-800 shadow-lg'
-                    : gameState.inCombat
-                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                    : 'bg-purple-700 text-white hover:bg-purple-600 hover:scale-105'
-                }`}
+                onClick={() => setCurrentModal('achievements')}
+                className="flex items-center gap-1 text-yellow-300 hover:text-yellow-200 transition-colors"
               >
-                <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">{label}</span>
+                <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>{unlockedAchievements}/{gameState.achievements.length}</span>
               </button>
-            ))}
-          </nav>
+              
+              <button
+                onClick={() => setCurrentModal('yojefMarket')}
+                className="flex items-center gap-1 text-indigo-300 hover:text-indigo-200 transition-colors"
+              >
+                <Book className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>Collect</span>
+              </button>
+              
+              <button
+                onClick={() => setCurrentModal('statistics')}
+                className="flex items-center gap-1 text-blue-300 hover:text-blue-200 transition-colors"
+              >
+                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>{Math.round((gameState.statistics.correctAnswers / Math.max(gameState.statistics.totalQuestionsAnswered, 1)) * 100)}%</span>
+              </button>
+            </div>
+            
+            {/* Navigation */}
+            <nav className="flex justify-center space-x-1 sm:space-x-2 overflow-x-auto pb-2">
+              {[
+                { id: 'stats', label: 'Hero', icon: User },
+                { id: 'research', label: 'Research', icon: Brain },
+                { id: 'shop', label: 'Shop', icon: Package },
+                { id: 'inventory', label: 'Inventory', icon: Shield },
+                { id: 'mining', label: 'Mining', icon: Pickaxe },
+                { id: 'promo', label: 'Promo', icon: Gift },
+              ].map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setCurrentView(id as GameView)}
+                  disabled={gameState.inCombat}
+                  className={`px-2 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap ${
+                    currentView === id
+                      ? 'bg-white text-purple-800 shadow-lg'
+                      : gameState.inCombat
+                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-purple-700 text-white hover:bg-purple-600 hover:scale-105'
+                  }`}
+                >
+                  <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">{label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          {renderCurrentView()}
+        {/* Main Content */}
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
+          <div className="max-w-4xl mx-auto">
+            {renderCurrentView()}
+          </div>
         </div>
-      </div>
 
-      {/* Modals */}
-      {renderModal()}
-    </div>
+        {/* Modals */}
+        {renderModal()}
+      </div>
+    </ErrorBoundary>
   );
 }
 
