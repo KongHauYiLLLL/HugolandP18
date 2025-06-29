@@ -1310,7 +1310,7 @@ export const useGameState = () => {
           return {
             ...prev,
             currentEnemy: null,
-            inComb at: false,
+            inCombat: false,
             combatLog: newCombatLog,
             playerStats: { ...prev.playerStats, hp: newPlayerHp },
           };
