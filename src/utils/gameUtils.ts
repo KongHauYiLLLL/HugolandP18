@@ -186,7 +186,7 @@ export const generateRelicItem = (): RelicItem => {
       baseAtk,
       level: 1,
       upgradeCost: 25,
-      cost: baseAtk * 5,
+      cost: baseAtk * 50, // 10x more expensive (was baseAtk * 5)
       description: 'A powerful relic weapon from ancient times'
     };
   } else {
@@ -198,7 +198,7 @@ export const generateRelicItem = (): RelicItem => {
       baseDef,
       level: 1,
       upgradeCost: 25,
-      cost: baseDef * 5,
+      cost: baseDef * 50, // 10x more expensive (was baseDef * 5)
       description: 'A powerful relic armor from ancient times'
     };
   }

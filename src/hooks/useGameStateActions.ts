@@ -314,6 +314,108 @@ export const useGameStateActions = (
     checkAndUnlockAchievements();
   }, [gameState.research, setGameState, triggerVisualEffect, checkAndUnlockAchievements]);
 
+  // Relic actions
+  const purchaseRelic = useCallback((relicId: string): boolean => {
+    setGameState(prev => {
+      const relic = prev.yojefMarket.items.find(r => r.id === relicId);
+      if (!relic || prev.coins < relic.cost || prev.inventory.equippedRelics.length >= 5) {
+        return prev;
+      }
+
+      triggerVisualEffect('text', { text: 'Relic Purchased!', color: 'text-indigo-400' });
+
+      return {
+        ...prev,
+        coins: prev.coins - relic.cost,
+        inventory: {
+          ...prev.inventory,
+          relics: [...prev.inventory.relics, relic],
+          equippedRelics: [...prev.inventory.equippedRelics, relic],
+        },
+        yojefMarket: {
+          ...prev.yojefMarket,
+          items: prev.yojefMarket.items.filter(r => r.id !== relicId),
+        },
+      };
+    });
+
+    return true;
+  }, [setGameState, triggerVisualEffect]);
+
+  const upgradeRelic = useCallback((relicId: string) => {
+    setGameState(prev => {
+      const relic = prev.inventory.relics.find(r => r.id === relicId);
+      if (!relic || prev.gems < relic.upgradeCost) return prev;
+
+      const updatedRelics = prev.inventory.relics.map(r =>
+        r.id === relicId
+          ? { 
+              ...r, 
+              level: r.level + 1, 
+              upgradeCost: Math.floor(r.upgradeCost * 1.5),
+              baseAtk: r.baseAtk ? r.baseAtk + 15 : undefined,
+              baseDef: r.baseDef ? r.baseDef + 10 : undefined,
+            }
+          : r
+      );
+
+      const updatedEquippedRelics = prev.inventory.equippedRelics.map(r =>
+        r.id === relicId ? updatedRelics.find(ur => ur.id === relicId)! : r
+      );
+
+      triggerVisualEffect('text', { text: 'Relic Upgraded!', color: 'text-indigo-400' });
+
+      return {
+        ...prev,
+        gems: prev.gems - relic.upgradeCost,
+        inventory: {
+          ...prev.inventory,
+          relics: updatedRelics,
+          equippedRelics: updatedEquippedRelics,
+        },
+      };
+    });
+  }, [setGameState, triggerVisualEffect]);
+
+  const equipRelic = useCallback((relicId: string) => {
+    setGameState(prev => {
+      const relic = prev.inventory.relics.find(r => r.id === relicId);
+      if (!relic || prev.inventory.equippedRelics.length >= 5 || 
+          prev.inventory.equippedRelics.some(r => r.id === relicId)) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        inventory: {
+          ...prev.inventory,
+          equippedRelics: [...prev.inventory.equippedRelics, relic],
+        },
+      };
+    });
+  }, [setGameState]);
+
+  const unequipRelic = useCallback((relicId: string) => {
+    setGameState(prev => ({
+      ...prev,
+      inventory: {
+        ...prev.inventory,
+        equippedRelics: prev.inventory.equippedRelics.filter(r => r.id !== relicId),
+      },
+    }));
+  }, [setGameState]);
+
+  const sellRelic = useCallback((relicId: string) => {
+    setGameState(prev => ({
+      ...prev,
+      inventory: {
+        ...prev.inventory,
+        relics: prev.inventory.relics.filter(r => r.id !== relicId),
+        equippedRelics: prev.inventory.equippedRelics.filter(r => r.id !== relicId),
+      },
+    }));
+  }, [setGameState]);
+
   return {
     equipWeapon,
     equipArmor,
@@ -328,5 +430,10 @@ export const useGameStateActions = (
     updateStatistics,
     checkAndUnlockAchievements,
     checkAndUnlockPlayerTags,
+    purchaseRelic,
+    upgradeRelic,
+    equipRelic,
+    unequipRelic,
+    sellRelic,
   };
 };
