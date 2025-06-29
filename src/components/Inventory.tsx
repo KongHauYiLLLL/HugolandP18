@@ -301,7 +301,7 @@ export const Inventory: React.FC<InventoryProps> = ({
               </div>
               <p className="text-gray-300 text-xs mb-2">{relic.description}</p>
               <p className="text-white text-sm mb-2">
-                {relic.type === 'weapon' ? `ATK: ${relic.baseAtk! + (relic.level - 1) * 15}` : `DEF: ${relic.baseDef! + (relic.level - 1) * 10}`}
+                {relic.type === 'weapon' ? `ATK: ${relic.baseAtk! + (relic.level - 1) * 22}` : `DEF: ${relic.baseDef! + (relic.level - 1) * 15}`}
               </p>
               <p className="text-gray-300 text-xs mb-3">Level {relic.level}</p>
               
@@ -350,7 +350,7 @@ export const Inventory: React.FC<InventoryProps> = ({
                 </div>
                 <p className="text-gray-300 text-xs mb-2">{relic.description}</p>
                 <p className="text-white text-sm mb-2">
-                  {relic.type === 'weapon' ? `ATK: ${relic.baseAtk! + (relic.level - 1) * 15}` : `DEF: ${relic.baseDef! + (relic.level - 1) * 10}`}
+                  {relic.type === 'weapon' ? `ATK: ${relic.baseAtk! + (relic.level - 1) * 22}` : `DEF: ${relic.baseDef! + (relic.level - 1) * 15}`}
                 </p>
                 <p className="text-gray-300 text-xs mb-3">Level {relic.level}</p>
                 
@@ -532,7 +532,7 @@ export const Inventory: React.FC<InventoryProps> = ({
             <p>• <strong>Anvil:</strong> Repair items by merging two identical items</p>
             <p>• <strong>Reset:</strong> Reset items to level 1 but keep ATK/DEF (costs 2 items of same rarity)</p>
             <p>• <strong>Enchanted Items:</strong> 5% chance from chests, double ATK/DEF</p>
-            <p>• <strong>Relics:</strong> Powerful ancient items from the Yojef Market (max 5 equipped)</p>
+            <p>• <strong>Relics:</strong> Powerful ancient items from the Yojef Market (max 5 equipped) - Now 1.5x stronger!</p>
           </div>
         </div>
       </div>

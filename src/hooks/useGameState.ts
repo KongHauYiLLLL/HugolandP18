@@ -509,15 +509,15 @@ export const useGameState = () => {
         ? prev.inventory.currentArmor.baseDef + (prev.inventory.currentArmor.level - 1) * 5
         : 0;
 
-      // Add relic bonuses
+      // Add relic bonuses - increased from 15/10 to 22/15 (1.5x)
       let relicAtkBonus = 0;
       let relicDefBonus = 0;
       
       prev.inventory.equippedRelics.forEach(relic => {
         if (relic.type === 'weapon' && relic.baseAtk) {
-          relicAtkBonus += relic.baseAtk + (relic.level - 1) * 15;
+          relicAtkBonus += relic.baseAtk + (relic.level - 1) * 22; // Increased from 15 to 22
         } else if (relic.type === 'armor' && relic.baseDef) {
-          relicDefBonus += relic.baseDef + (relic.level - 1) * 10;
+          relicDefBonus += relic.baseDef + (relic.level - 1) * 15; // Increased from 10 to 15
         }
       });
 
@@ -856,8 +856,9 @@ export const useGameState = () => {
               ...r, 
               level: r.level + 1, 
               upgradeCost: Math.floor(r.upgradeCost * 1.5),
-              baseAtk: r.baseAtk ? r.baseAtk + 15 : undefined,
-              baseDef: r.baseDef ? r.baseDef + 10 : undefined,
+              // Increased upgrade bonuses from 15/10 to 22/15 (1.5x)
+              baseAtk: r.baseAtk ? r.baseAtk + 22 : undefined,
+              baseDef: r.baseDef ? r.baseDef + 15 : undefined,
             }
           : r
       );

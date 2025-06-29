@@ -178,7 +178,8 @@ export const generateRelicItem = (): RelicItem => {
   const name = names[Math.floor(Math.random() * names.length)];
   
   if (isWeapon) {
-    const baseAtk = 80 + Math.floor(Math.random() * 40); // 80-120 ATK
+    // Increased base ATK from 80-120 to 120-180 (1.5x)
+    const baseAtk = 120 + Math.floor(Math.random() * 60);
     return {
       id: Math.random().toString(36).substr(2, 9),
       name,
@@ -190,7 +191,8 @@ export const generateRelicItem = (): RelicItem => {
       description: 'A powerful relic weapon from ancient times'
     };
   } else {
-    const baseDef = 60 + Math.floor(Math.random() * 30); // 60-90 DEF
+    // Increased base DEF from 60-90 to 90-135 (1.5x)
+    const baseDef = 90 + Math.floor(Math.random() * 45);
     return {
       id: Math.random().toString(36).substr(2, 9),
       name,
