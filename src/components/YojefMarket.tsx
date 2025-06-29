@@ -118,25 +118,25 @@ export const YojefMarket: React.FC<YojefMarketProps> = ({
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-1 text-yellow-400">
                   <Coins className="w-4 h-4" />
-                  <span className="font-bold">{relic.cost.toLocaleString()}</span>
+                  <span className="font-bold">{(relic.cost ?? 0).toLocaleString()}</span>
                 </div>
                 <span className="text-xs text-gray-400">
-                  Upgrade: {relic.upgradeCost} gems
+                  Upgrade: {relic.upgradeCost ?? 0} gems
                 </span>
               </div>
 
               <button
                 onClick={() => handlePurchase(relic)}
-                disabled={coins < relic.cost || equippedRelicsCount >= 5}
+                disabled={coins < (relic.cost ?? 0) || equippedRelicsCount >= 5}
                 className={`w-full py-2 rounded-lg font-semibold transition-all text-sm ${
-                  coins >= relic.cost && equippedRelicsCount < 5
+                  coins >= (relic.cost ?? 0) && equippedRelicsCount < 5
                     ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500'
                     : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                 }`}
               >
                 {equippedRelicsCount >= 5 
                   ? 'Relic Limit Reached' 
-                  : coins >= relic.cost 
+                  : coins >= (relic.cost ?? 0) 
                     ? 'Purchase Relic' 
                     : 'Not Enough Coins'
                 }
