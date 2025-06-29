@@ -220,6 +220,23 @@ export const useGameState = () => {
         
         if (savedState) {
           const parsedState = JSON.parse(savedState);
+          
+          // Ensure research object is properly initialized
+          const research = {
+            atk: {
+              level: parsedState.research?.atk?.level || 0,
+              totalSpent: parsedState.research?.atk?.totalSpent || 0,
+            },
+            def: {
+              level: parsedState.research?.def?.level || 0,
+              totalSpent: parsedState.research?.def?.totalSpent || 0,
+            },
+            hp: {
+              level: parsedState.research?.hp?.level || 0,
+              totalSpent: parsedState.research?.hp?.totalSpent || 0,
+            },
+          };
+          
           setGameState({
             ...initialGameState,
             ...parsedState,
@@ -235,7 +252,7 @@ export const useGameState = () => {
               ...parsedState.statistics,
               sessionStartTime: new Date(),
             },
-            research: parsedState.research || initialResearch,
+            research: research,
             isPremium: parsedState.isPremium || parsedState.zone >= 50,
             cheats: parsedState.cheats || initialCheats,
             mining: parsedState.mining || initialMining,

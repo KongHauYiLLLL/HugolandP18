@@ -166,12 +166,14 @@ export const checkAchievements = (gameState: GameState): Achievement[] => {
         shouldUnlock = progress >= 50;
         break;
       case 'scholar_tier_3':
-        progress = Math.min(gameState.research.tier + 1, 3);
-        shouldUnlock = gameState.research.tier >= 2;
+        const totalResearchLevel3 = gameState.research.atk.level + gameState.research.def.level + gameState.research.hp.level;
+        progress = Math.min(totalResearchLevel3, 3);
+        shouldUnlock = totalResearchLevel3 >= 3;
         break;
       case 'scholar_tier_5':
-        progress = Math.min(gameState.research.tier + 1, 5);
-        shouldUnlock = gameState.research.tier >= 4;
+        const totalResearchLevel5 = gameState.research.atk.level + gameState.research.def.level + gameState.research.hp.level;
+        progress = Math.min(totalResearchLevel5, 5);
+        shouldUnlock = totalResearchLevel5 >= 5;
         break;
       case 'streak_master_10':
         progress = Math.min(gameState.knowledgeStreak.best, 10);
