@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Inventory as InventoryType, Weapon, Armor, RelicItem } from '../types/game';
-import { Sword, Shield, Gem, Star, Coins, Sparkles, Wrench, Package, Hammer, RotateCcw, Book } from 'lucide-react';
-import { getRarityColor, getRarityBorder, getRarityGlow, getRepairCost, canRepairWithAnvil, canResetItem } from '../utils/gameUtils';
+import { Sword, Shield, Gem, Star, Coins, Sparkles, Wrench, Package, Hammer, Book } from 'lucide-react';
+import { getRarityColor, getRarityBorder, getRarityGlow, getRepairCost, canRepairWithAnvil, repairWithAnvil } from '../utils/gameUtils';
 
 interface InventoryProps {
   inventory: InventoryType;
@@ -13,7 +13,6 @@ interface InventoryProps {
   onSellWeapon: (weaponId: string) => void;
   onSellArmor: (armorId: string) => void;
   onRepairWithAnvil: (item1Id: string, item2Id: string, type: 'weapon' | 'armor') => void;
-  onResetItem: (itemId: string, type: 'weapon' | 'armor') => void;
   onUpgradeRelic: (relicId: string) => void;
   onEquipRelic: (relicId: string) => void;
   onUnequipRelic: (relicId: string) => void;
@@ -31,7 +30,6 @@ export const Inventory: React.FC<InventoryProps> = ({
   onSellWeapon,
   onSellArmor,
   onRepairWithAnvil,
-  onResetItem,
   onUpgradeRelic,
   onEquipRelic,
   onUnequipRelic,
@@ -243,37 +241,22 @@ export const Inventory: React.FC<InventoryProps> = ({
               </button>
             </div>
 
-            {/* Anvil and Reset buttons */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  if (!selectedForAnvil.item1) {
-                    setSelectedForAnvil({ item1: item, type });
-                  } else if (!selectedForAnvil.item2 && selectedForAnvil.item1.id !== item.id) {
-                    setSelectedForAnvil({ ...selectedForAnvil, item2: item });
-                  } else {
-                    setSelectedForAnvil({});
-                  }
-                }}
-                className="flex-1 px-2 py-1 text-xs rounded font-semibold bg-yellow-600 text-white hover:bg-yellow-500 transition-all flex items-center gap-1 justify-center"
-              >
-                <Hammer className="w-3 h-3" />
-                Anvil
-              </button>
-              
-              <button
-                onClick={() => onResetItem(item.id, type)}
-                disabled={!canResetItem(type === 'weapon' ? inventory.weapons : inventory.armor, item)}
-                className={`flex-1 px-2 py-1 text-xs rounded font-semibold transition-all flex items-center gap-1 justify-center ${
-                  canResetItem(type === 'weapon' ? inventory.weapons : inventory.armor, item)
-                    ? 'bg-cyan-600 text-white hover:bg-cyan-500'
-                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                <RotateCcw className="w-3 h-3" />
-                Reset
-              </button>
-            </div>
+            {/* Anvil button only */}
+            <button
+              onClick={() => {
+                if (!selectedForAnvil.item1) {
+                  setSelectedForAnvil({ item1: item, type });
+                } else if (!selectedForAnvil.item2 && selectedForAnvil.item1.id !== item.id) {
+                  setSelectedForAnvil({ ...selectedForAnvil, item2: item });
+                } else {
+                  setSelectedForAnvil({});
+                }
+              }}
+              className="w-full px-2 py-1 text-xs rounded font-semibold bg-yellow-600 text-white hover:bg-yellow-500 transition-all flex items-center gap-1 justify-center"
+            >
+              <Hammer className="w-3 h-3" />
+              Anvil
+            </button>
           </div>
         </div>
       ))}
@@ -439,7 +422,7 @@ export const Inventory: React.FC<InventoryProps> = ({
         {[
           { key: 'weapons', label: 'Weapons', count: inventory.weapons.length, icon: Sword },
           { key: 'armor', label: 'Armor', count: inventory.armor.length, icon: Shield },
-          { key: 'relics', label: 'Relics', count: inventory.relics.length, icon: Package }
+          { key: 'relics', label: 'Relics', count: inventory.relics.length, icon: Book }
         ].map(({ key, label, count, icon: Icon }) => (
           <button
             key={key}
@@ -530,7 +513,6 @@ export const Inventory: React.FC<InventoryProps> = ({
           </p>
           <div className="text-xs text-gray-400 space-y-1">
             <p>• <strong>Anvil:</strong> Repair items by merging two identical items</p>
-            <p>• <strong>Reset:</strong> Reset items to level 1 but keep ATK/DEF (costs 2 items of same rarity)</p>
             <p>• <strong>Enchanted Items:</strong> 5% chance from chests, double ATK/DEF</p>
             <p>• <strong>Relics:</strong> Powerful ancient items from the Yojef Market (max 5 equipped) - Now 1.5x stronger!</p>
           </div>

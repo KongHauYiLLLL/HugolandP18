@@ -16,7 +16,6 @@ import { Mining } from './components/Mining';
 import { PromoCode } from './components/PromoCode';
 import { YojefMarket } from './components/YojefMarket';
 import { FloatingIcons } from './components/FloatingIcons';
-import { FloatingText, ScreenShake } from './components/VisualEffects';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { Shield, Package, User, Play, RotateCcw, Brain, Crown, Trophy, Book, BarChart3, Settings, Pickaxe, Gift } from 'lucide-react';
 
@@ -27,8 +26,6 @@ function App() {
   const {
     gameState,
     isLoading,
-    visualEffects,
-    clearVisualEffect,
     equipWeapon,
     equipArmor,
     upgradeWeapon,
@@ -49,7 +46,6 @@ function App() {
     redeemPromoCode,
     discardItem,
     repairWithAnvil,
-    resetItemWithSacrifice,
     purchaseRelic,
     upgradeRelic,
     equipRelic,
@@ -233,7 +229,6 @@ function App() {
             onSellWeapon={sellWeapon}
             onSellArmor={sellArmor}
             onRepairWithAnvil={repairWithAnvil}
-            onResetItem={resetItemWithSacrifice}
             onUpgradeRelic={upgradeRelic}
             onEquipRelic={equipRelic}
             onUnequipRelic={unequipRelic}
@@ -395,21 +390,6 @@ function App() {
       
       {/* PWA Install Prompt */}
       <PWAInstallPrompt />
-      
-      {/* Visual Effects */}
-      {visualEffects.showFloatingText && (
-        <FloatingText
-          text={visualEffects.floatingText}
-          color={visualEffects.floatingTextColor}
-          onComplete={() => clearVisualEffect('text')}
-        />
-      )}
-      {visualEffects.showScreenShake && (
-        <ScreenShake
-          trigger={visualEffects.showScreenShake}
-          onComplete={() => clearVisualEffect('shake')}
-        />
-      )}
 
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-800 via-violet-800 to-purple-800 shadow-2xl relative z-10">
