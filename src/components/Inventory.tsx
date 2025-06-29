@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Inventory as InventoryType, Weapon, Armor, RelicItem } from '../types/game';
-import { Sword, Shield, Gem, Star, Coins, Sparkles, Wrench, Package, Hammer, RotateCcw } from 'lucide-react';
+import { Sword, Shield, Gem, Star, Coins, Sparkles, Wrench, Package, Hammer, RotateCcw, Book } from 'lucide-react';
 import { getRarityColor, getRarityBorder, getRarityGlow, getRepairCost, canRepairWithAnvil, canResetItem } from '../utils/gameUtils';
 
 interface InventoryProps {
@@ -18,6 +18,7 @@ interface InventoryProps {
   onEquipRelic: (relicId: string) => void;
   onUnequipRelic: (relicId: string) => void;
   onSellRelic: (relicId: string) => void;
+  onOpenYojefMarket: () => void;
 }
 
 export const Inventory: React.FC<InventoryProps> = ({
@@ -35,6 +36,7 @@ export const Inventory: React.FC<InventoryProps> = ({
   onEquipRelic,
   onUnequipRelic,
   onSellRelic,
+  onOpenYojefMarket,
 }) => {
   const [activeTab, setActiveTab] = useState<'weapons' | 'armor' | 'relics'>('weapons');
   const [selectedForAnvil, setSelectedForAnvil] = useState<{ item1?: Weapon | Armor; item2?: Weapon | Armor; type?: 'weapon' | 'armor' }>({});
@@ -522,6 +524,15 @@ export const Inventory: React.FC<InventoryProps> = ({
             <p>• <strong>Anvil:</strong> Repair items by merging two identical items</p>
             <p>• <strong>Reset:</strong> Reset items to level 1 but keep ATK/DEF (costs 2 items of same rarity)</p>
             <p>• <strong>Enchanted Items:</strong> 5% chance from chests, double ATK/DEF</p>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <button
+                onClick={onOpenYojefMarket}
+                className="px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-500 hover:to-purple-500 transition-all text-xs font-semibold flex items-center gap-1"
+              >
+                <Book className="w-3 h-3" />
+                Visit Yojef Market
+              </button>
+            </div>
             <p>• <strong>Relics:</strong> Powerful ancient items from the Yojef Market (max 5 equipped)</p>
           </div>
         </div>

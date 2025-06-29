@@ -35,7 +35,7 @@ export const Mining: React.FC<MiningProps> = ({
 
   // Generate new gem node
   const generateGemNode = () => {
-    const isShiny = Math.random() < 0.3; // 30% chance for shiny gem
+    const isShiny = Math.random() < 0.1; // 10% chance for shiny gem (reduced from 30%)
     const newNode: GemNode = {
       x: Math.floor(Math.random() * GRID_SIZE),
       y: Math.floor(Math.random() * GRID_SIZE),
@@ -148,7 +148,7 @@ export const Mining: React.FC<MiningProps> = ({
           {renderMiningGrid()}
         </div>
         <div className="text-center text-gray-400 text-xs sm:text-sm mt-3 space-y-1">
-          <p>Purple gems = 1 gem each | Golden gems = 10 gems each (30% chance)</p>
+          <p>Purple gems = 1 gem each | Golden gems = 10 gems each (10% chance)</p>
           <p>Click once to mine instantly!</p>
         </div>
       </div>

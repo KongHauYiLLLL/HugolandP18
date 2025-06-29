@@ -580,7 +580,7 @@ export const useGameState = () => {
   const mineGem = useCallback((x: number, y: number): { gems: number; shinyGems: number } | null => {
     // This would be called from the Mining component with the gem node data
     // For now, we'll simulate the mining result
-    const isShiny = Math.random() < 0.3; // 30% chance for shiny
+    const isShiny = Math.random() < 0.1; // 10% chance for shiny (reduced from 30%)
     const gemsEarned = isShiny ? 10 : gameState.mining.efficiency;
     const shinyGemsEarned = isShiny ? 1 : 0;
 
@@ -1310,7 +1310,7 @@ export const useGameState = () => {
           return {
             ...prev,
             currentEnemy: null,
-            inCombat: false,
+            inComb at: false,
             combatLog: newCombatLog,
             playerStats: { ...prev.playerStats, hp: newPlayerHp },
           };

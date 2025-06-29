@@ -238,6 +238,7 @@ function App() {
             onEquipRelic={equipRelic}
             onUnequipRelic={unequipRelic}
             onSellRelic={sellRelic}
+            onOpenYojefMarket={() => setCurrentModal('yojefMarket')}
           />
         );
       case 'research':

@@ -18,13 +18,13 @@ export const Shop: React.FC<ShopProps> = ({ coins, onOpenChest, onDiscardItem, i
   const chests = [
     { 
       name: 'Basic Chest', 
-      cost: 50, 
+      cost: 100, 
       description: 'Common rewards',
       rarityInfo: '60% Common, 30% Rare, 8% Epic, 2% Legendary'
     },
     { 
       name: 'Rare Chest', 
-      cost: 150, 
+      cost: 200, 
       description: 'Better rewards',
       rarityInfo: '50% Rare, 35% Epic, 13% Legendary, 2% Mythical'
     },
