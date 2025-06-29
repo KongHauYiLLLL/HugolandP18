@@ -8,7 +8,7 @@ import { Research } from './components/Research';
 import { Achievements } from './components/Achievements';
 import { CollectionBook } from './components/CollectionBook';
 import { Statistics } from './components/Statistics';
-import { GameModeSelector } from './components/GameModeSelector';
+import { SettingsModal } from './components/SettingsModal';
 import { PokyegMarket } from './components/PokyegMarket';
 import { Tutorial } from './components/Tutorial';
 import { CheatPanel } from './components/CheatPanel';
@@ -18,10 +18,12 @@ import { YojefMarket } from './components/YojefMarket';
 import { FloatingIcons } from './components/FloatingIcons';
 import { FloatingText, ScreenShake } from './components/VisualEffects';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
-import { Shield, Package, User, Play, RotateCcw, Brain, Crown, Trophy, Book, BarChart3, Settings, Pickaxe, Gift } from 'lucide-react';
+import { 
+  Shield, Package, User, Play, RotateCcw, Brain, Crown, Trophy, Book, BarChart3, 
+  Settings, Pickaxe, Gift, Skull, Coins, Gem, Sparkles, Zap, Star, TrendingUp 
+} from 'lucide-react';
 
-type GameView = 'stats' | 'shop' | 'inventory' | 'research' | 'mining' | 'promo';
-type ModalView = 'achievements' | 'collection' | 'statistics' | 'gameMode' | 'pokyegMarket' | 'tutorial' | 'cheats' | 'resetConfirm' | 'yojefMarket' | null;
+type ModalView = 'achievements' | 'collection' | 'statistics' | 'settings' | 'pokyegMarket' | 'tutorial' | 'cheats' | 'resetConfirm' | 'yojefMarket' | 'shop' | 'inventory' | 'research' | 'mining' | 'promo' | null;
 
 function App() {
   const {
@@ -55,9 +57,9 @@ function App() {
     equipRelic,
     unequipRelic,
     sellRelic,
+    purchaseMultiplier,
   } = useGameState();
 
-  const [currentView, setCurrentView] = useState<GameView>('stats');
   const [currentModal, setCurrentModal] = useState<ModalView>(null);
   const [showWelcome, setShowWelcome] = useState(true);
 
@@ -122,156 +124,6 @@ function App() {
     setCurrentModal(null);
   };
 
-  const renderCurrentView = () => {
-    if (gameState.inCombat && gameState.currentEnemy) {
-      return (
-        <Combat
-          enemy={gameState.currentEnemy}
-          playerStats={gameState.playerStats}
-          onAttack={attack}
-          combatLog={gameState.combatLog}
-          gameMode={gameState.gameMode}
-          knowledgeStreak={gameState.knowledgeStreak}
-        />
-      );
-    }
-
-    switch (currentView) {
-      case 'stats':
-        return (
-          <div className="space-y-4 sm:space-y-6">
-            <PlayerStats
-              playerStats={gameState.playerStats}
-              zone={gameState.zone}
-              coins={gameState.coins}
-              gems={gameState.gems}
-              shinyGems={gameState.shinyGems}
-              playerTags={gameState.playerTags}
-            />
-            
-            {/* Knowledge Streak Display */}
-            {gameState.knowledgeStreak.current > 0 && (
-              <div className="bg-gradient-to-r from-yellow-900 to-orange-900 p-3 sm:p-4 rounded-lg border border-yellow-500/50">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-xl sm:text-2xl">🔥</span>
-                    <h3 className="text-yellow-400 font-bold text-sm sm:text-lg">Knowledge Streak!</h3>
-                  </div>
-                  <p className="text-white text-xs sm:text-sm">
-                    {gameState.knowledgeStreak.current} correct answers in a row
-                  </p>
-                  <p className="text-yellow-300 text-xs sm:text-sm">
-                    +{Math.round((gameState.knowledgeStreak.multiplier - 1) * 100)}% reward bonus
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="text-center space-y-3 sm:space-y-4">
-              <button
-                onClick={startCombat}
-                disabled={gameState.playerStats.hp <= 0}
-                className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-white transition-all duration-200 transform flex items-center gap-3 justify-center text-sm sm:text-base ${
-                  gameState.playerStats.hp > 0
-                    ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 hover:scale-105 shadow-lg hover:shadow-green-500/25'
-                    : 'bg-gray-600 cursor-not-allowed'
-                }`}
-              >
-                <Play className="w-4 h-4 sm:w-5 sm:h-5" />
-                {gameState.playerStats.hp <= 0 ? 'You are defeated!' : 'Start Adventure'}
-              </button>
-              
-              {gameState.playerStats.hp <= 0 && (
-                <p className="text-red-400 mt-2 text-xs sm:text-sm">
-                  Visit the shop to get better equipment and try again!
-                </p>
-              )}
-              
-              {gameState.isPremium && (
-                <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-3 rounded-lg">
-                  <div className="flex items-center justify-center gap-2">
-                    <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                    <span className="text-white font-bold text-xs sm:text-sm">🎉 PREMIUM MEMBER UNLOCKED! 🎉</span>
-                  </div>
-                  <p className="text-yellow-100 text-xs mt-1">
-                    You've reached Zone 50! Enjoy exclusive rewards and special features!
-                  </p>
-                </div>
-              )}
-              
-              <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
-                <button
-                  onClick={() => setCurrentModal('gameMode')}
-                  className="px-3 sm:px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 transition-all duration-200 flex items-center gap-2 justify-center text-xs sm:text-sm"
-                >
-                  <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
-                  Game Mode
-                </button>
-                
-                <button
-                  onClick={handleResetGame}
-                  className="px-3 sm:px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all duration-200 flex items-center gap-2 justify-center text-xs sm:text-sm"
-                >
-                  <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
-                  Reset Game
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      case 'shop':
-        return <Shop coins={gameState.coins} onOpenChest={openChest} onDiscardItem={discardItem} isPremium={gameState.isPremium} />;
-      case 'inventory':
-        return (
-          <Inventory
-            inventory={gameState.inventory}
-            gems={gameState.gems}
-            onEquipWeapon={equipWeapon}
-            onEquipArmor={equipArmor}
-            onUpgradeWeapon={upgradeWeapon}
-            onUpgradeArmor={upgradeArmor}
-            onSellWeapon={sellWeapon}
-            onSellArmor={sellArmor}
-            onRepairWithAnvil={repairWithAnvil}
-            onResetItem={resetItemWithSacrifice}
-            onUpgradeRelic={upgradeRelic}
-            onEquipRelic={equipRelic}
-            onUnequipRelic={unequipRelic}
-            onSellRelic={sellRelic}
-            onOpenYojefMarket={() => setCurrentModal('yojefMarket')}
-          />
-        );
-      case 'research':
-        return (
-          <Research
-            research={gameState.research}
-            coins={gameState.coins}
-            onUpgradeResearch={upgradeResearch}
-            isPremium={gameState.isPremium}
-          />
-        );
-      case 'mining':
-        return (
-          <Mining
-            mining={gameState.mining}
-            gems={gameState.gems}
-            shinyGems={gameState.shinyGems}
-            onMineGem={mineGem}
-            onExchangeShinyGems={exchangeShinyGems}
-          />
-        );
-      case 'promo':
-        return (
-          <PromoCode
-            promoCodes={gameState.promoCodes}
-            onRedeemCode={redeemPromoCode}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   const renderModal = () => {
     switch (currentModal) {
       case 'achievements':
@@ -297,11 +149,12 @@ function App() {
             onClose={() => setCurrentModal(null)}
           />
         );
-      case 'gameMode':
+      case 'settings':
         return (
-          <GameModeSelector
+          <SettingsModal
             currentMode={gameState.gameMode}
             onSelectMode={setGameMode}
+            onResetGame={handleResetGame}
             onClose={() => setCurrentModal(null)}
           />
         );
@@ -309,7 +162,9 @@ function App() {
         return (
           <PokyegMarket
             coins={gameState.coins}
-            onPurchaseMythical={purchaseMythical}
+            gems={gameState.gems}
+            multipliers={gameState.multipliers}
+            onPurchaseMultiplier={purchaseMultiplier}
             onClose={() => setCurrentModal(null)}
           />
         );
@@ -337,6 +192,66 @@ function App() {
             onPurchaseRelic={purchaseRelic}
             onClose={() => setCurrentModal(null)}
             nextRefresh={gameState.yojefMarket.nextRefresh}
+          />
+        );
+      case 'shop':
+        return (
+          <Shop
+            coins={gameState.coins}
+            onOpenChest={openChest}
+            onDiscardItem={discardItem}
+            isPremium={gameState.isPremium}
+            onClose={() => setCurrentModal(null)}
+          />
+        );
+      case 'inventory':
+        return (
+          <Inventory
+            inventory={gameState.inventory}
+            gems={gameState.gems}
+            onEquipWeapon={equipWeapon}
+            onEquipArmor={equipArmor}
+            onUpgradeWeapon={upgradeWeapon}
+            onUpgradeArmor={upgradeArmor}
+            onSellWeapon={sellWeapon}
+            onSellArmor={sellArmor}
+            onRepairWithAnvil={repairWithAnvil}
+            onResetItem={resetItemWithSacrifice}
+            onUpgradeRelic={upgradeRelic}
+            onEquipRelic={equipRelic}
+            onUnequipRelic={unequipRelic}
+            onSellRelic={sellRelic}
+            onOpenYojefMarket={() => setCurrentModal('yojefMarket')}
+            onClose={() => setCurrentModal(null)}
+          />
+        );
+      case 'research':
+        return (
+          <Research
+            research={gameState.research}
+            coins={gameState.coins}
+            onUpgradeResearch={upgradeResearch}
+            isPremium={gameState.isPremium}
+            onClose={() => setCurrentModal(null)}
+          />
+        );
+      case 'mining':
+        return (
+          <Mining
+            mining={gameState.mining}
+            gems={gameState.gems}
+            shinyGems={gameState.shinyGems}
+            onMineGem={mineGem}
+            onExchangeShinyGems={exchangeShinyGems}
+            onClose={() => setCurrentModal(null)}
+          />
+        );
+      case 'promo':
+        return (
+          <PromoCode
+            promoCodes={gameState.promoCodes}
+            onRedeemCode={redeemPromoCode}
+            onClose={() => setCurrentModal(null)}
           />
         );
       case 'resetConfirm':
@@ -389,6 +304,43 @@ function App() {
 
   const unlockedAchievements = gameState.achievements.filter(a => a.unlocked).length;
 
+  // Combat overlay with highest z-index
+  if (gameState.inCombat && gameState.currentEnemy) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
+        <FloatingIcons />
+        
+        {/* Visual Effects */}
+        {visualEffects.showFloatingText && (
+          <FloatingText
+            text={visualEffects.floatingText}
+            color={visualEffects.floatingTextColor}
+            onComplete={() => clearVisualEffect('text')}
+          />
+        )}
+        {visualEffects.showScreenShake && (
+          <ScreenShake
+            trigger={visualEffects.showScreenShake}
+            onComplete={() => clearVisualEffect('shake')}
+          />
+        )}
+
+        <div className="fixed inset-0 z-50 p-4">
+          <div className="container mx-auto max-w-4xl h-full flex items-center justify-center">
+            <Combat
+              enemy={gameState.currentEnemy}
+              playerStats={gameState.playerStats}
+              onAttack={attack}
+              combatLog={gameState.combatLog}
+              gameMode={gameState.gameMode}
+              knowledgeStreak={gameState.knowledgeStreak}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
       <FloatingIcons />
@@ -414,7 +366,7 @@ function App() {
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-800 via-violet-800 to-purple-800 shadow-2xl relative z-10">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-6">
-          <div className="flex items-center justify-between mb-3 sm:mb-6">
+          <div className="flex items-center justify-center mb-3 sm:mb-6">
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-white">
                 🏰 Hugoland 🗡️
@@ -436,7 +388,7 @@ function App() {
             </button>
             
             <button
-              onClick={() => setCurrentModal('yojefMarket')}
+              onClick={() => setCurrentModal('collection')}
               className="flex items-center gap-1 text-indigo-300 hover:text-indigo-200 transition-colors"
             >
               <Book className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -451,41 +403,169 @@ function App() {
               <span>{Math.round((gameState.statistics.correctAnswers / Math.max(gameState.statistics.totalQuestionsAnswered, 1)) * 100)}%</span>
             </button>
           </div>
-          
-          {/* Navigation */}
-          <nav className="flex justify-center space-x-1 sm:space-x-2 overflow-x-auto pb-2">
-            {[
-              { id: 'stats', label: 'Hero', icon: User },
-              { id: 'research', label: 'Research', icon: Brain },
-              { id: 'shop', label: 'Shop', icon: Package },
-              { id: 'inventory', label: 'Inventory', icon: Shield },
-              { id: 'mining', label: 'Mining', icon: Pickaxe },
-              { id: 'promo', label: 'Promo', icon: Gift },
-            ].map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setCurrentView(id as GameView)}
-                disabled={gameState.inCombat}
-                className={`px-2 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap ${
-                  currentView === id
-                    ? 'bg-white text-purple-800 shadow-lg'
-                    : gameState.inCombat
-                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                    : 'bg-purple-700 text-white hover:bg-purple-600 hover:scale-105'
-                }`}
-              >
-                <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">{label}</span>
-              </button>
-            ))}
-          </nav>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          {renderCurrentView()}
+        <div className="max-w-6xl mx-auto">
+          {/* Player Stats - Always Visible */}
+          <div className="mb-6">
+            <PlayerStats
+              playerStats={gameState.playerStats}
+              zone={gameState.zone}
+              coins={gameState.coins}
+              gems={gameState.gems}
+              shinyGems={gameState.shinyGems}
+              playerTags={gameState.playerTags}
+            />
+          </div>
+          
+          {/* Knowledge Streak Display */}
+          {gameState.knowledgeStreak.current > 0 && (
+            <div className="bg-gradient-to-r from-yellow-900 to-orange-900 p-3 sm:p-4 rounded-lg border border-yellow-500/50 mb-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-xl sm:text-2xl">🔥</span>
+                  <h3 className="text-yellow-400 font-bold text-sm sm:text-lg">Knowledge Streak!</h3>
+                </div>
+                <p className="text-white text-xs sm:text-sm">
+                  {gameState.knowledgeStreak.current} correct answers in a row
+                </p>
+                <p className="text-yellow-300 text-xs sm:text-sm">
+                  +{Math.round((gameState.knowledgeStreak.multiplier - 1) * 100)}% reward bonus
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Start Adventure Button */}
+          <div className="text-center mb-8">
+            <button
+              onClick={startCombat}
+              disabled={gameState.playerStats.hp <= 0}
+              className={`px-8 py-4 rounded-lg font-bold text-white transition-all duration-200 transform flex items-center gap-3 justify-center text-lg mx-auto ${
+                gameState.playerStats.hp > 0
+                  ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 hover:scale-105 shadow-lg hover:shadow-green-500/25'
+                  : 'bg-gray-600 cursor-not-allowed'
+              }`}
+            >
+              <Play className="w-6 h-6" />
+              {gameState.playerStats.hp <= 0 ? 'You are defeated!' : 'Start Adventure'}
+            </button>
+            
+            {gameState.playerStats.hp <= 0 && (
+              <p className="text-red-400 mt-2 text-sm">
+                Visit the shop to get better equipment and try again!
+              </p>
+            )}
+          </div>
+
+          {/* Premium Status */}
+          {gameState.isPremium && (
+            <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-lg mb-8">
+              <div className="flex items-center justify-center gap-2">
+                <Crown className="w-6 h-6 text-white" />
+                <span className="text-white font-bold text-lg">🎉 PREMIUM MEMBER UNLOCKED! 🎉</span>
+              </div>
+              <p className="text-yellow-100 text-sm text-center mt-1">
+                You've reached Zone 50! Enjoy exclusive rewards and special features!
+              </p>
+            </div>
+          )}
+
+          {/* Action Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {/* Shop */}
+            <button
+              onClick={() => setCurrentModal('shop')}
+              className="bg-gradient-to-br from-yellow-600 to-orange-600 p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-yellow-500/25 transition-all duration-200 hover:scale-105 group"
+            >
+              <Package className="w-8 h-8 sm:w-12 sm:h-12 text-white mx-auto mb-2 group-hover:animate-bounce" />
+              <h3 className="text-white font-bold text-sm sm:text-base">Treasure Shop</h3>
+              <p className="text-yellow-100 text-xs mt-1">Open chests for loot</p>
+            </button>
+
+            {/* Inventory */}
+            <button
+              onClick={() => setCurrentModal('inventory')}
+              className="bg-gradient-to-br from-blue-600 to-indigo-600 p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-blue-500/25 transition-all duration-200 hover:scale-105 group"
+            >
+              <Shield className="w-8 h-8 sm:w-12 sm:h-12 text-white mx-auto mb-2 group-hover:animate-bounce" />
+              <h3 className="text-white font-bold text-sm sm:text-base">Inventory</h3>
+              <p className="text-blue-100 text-xs mt-1">Manage equipment</p>
+            </button>
+
+            {/* Research */}
+            <button
+              onClick={() => setCurrentModal('research')}
+              className="bg-gradient-to-br from-purple-600 to-violet-600 p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-purple-500/25 transition-all duration-200 hover:scale-105 group"
+            >
+              <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-white mx-auto mb-2 group-hover:animate-bounce" />
+              <h3 className="text-white font-bold text-sm sm:text-base">Research</h3>
+              <p className="text-purple-100 text-xs mt-1">Upgrade abilities</p>
+            </button>
+
+            {/* Mining */}
+            <button
+              onClick={() => setCurrentModal('mining')}
+              className="bg-gradient-to-br from-gray-600 to-slate-600 p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-gray-500/25 transition-all duration-200 hover:scale-105 group"
+            >
+              <Pickaxe className="w-8 h-8 sm:w-12 sm:h-12 text-white mx-auto mb-2 group-hover:animate-bounce" />
+              <h3 className="text-white font-bold text-sm sm:text-base">Mining</h3>
+              <p className="text-gray-100 text-xs mt-1">Mine gems</p>
+            </button>
+
+            {/* Promo Codes */}
+            <button
+              onClick={() => setCurrentModal('promo')}
+              className="bg-gradient-to-br from-green-600 to-emerald-600 p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-green-500/25 transition-all duration-200 hover:scale-105 group"
+            >
+              <Gift className="w-8 h-8 sm:w-12 sm:h-12 text-white mx-auto mb-2 group-hover:animate-bounce" />
+              <h3 className="text-white font-bold text-sm sm:text-base">Promo Codes</h3>
+              <p className="text-green-100 text-xs mt-1">Redeem rewards</p>
+            </button>
+
+            {/* Pokyeg Market */}
+            <button
+              onClick={() => setCurrentModal('pokyegMarket')}
+              className="bg-gradient-to-br from-red-600 to-red-700 p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-red-500/25 transition-all duration-200 hover:scale-105 group"
+            >
+              <Skull className="w-8 h-8 sm:w-12 sm:h-12 text-white mx-auto mb-2 group-hover:animate-bounce" />
+              <h3 className="text-white font-bold text-sm sm:text-base">Pokyeg Market</h3>
+              <p className="text-red-100 text-xs mt-1">Permanent upgrades</p>
+            </button>
+
+            {/* Settings */}
+            <button
+              onClick={() => setCurrentModal('settings')}
+              className="bg-gradient-to-br from-slate-600 to-gray-600 p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-slate-500/25 transition-all duration-200 hover:scale-105 group"
+            >
+              <Settings className="w-8 h-8 sm:w-12 sm:h-12 text-white mx-auto mb-2 group-hover:animate-bounce" />
+              <h3 className="text-white font-bold text-sm sm:text-base">Settings</h3>
+              <p className="text-slate-100 text-xs mt-1">Game options</p>
+            </button>
+
+            {/* Tutorial */}
+            <button
+              onClick={() => setCurrentModal('tutorial')}
+              className="bg-gradient-to-br from-cyan-600 to-teal-600 p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-cyan-500/25 transition-all duration-200 hover:scale-105 group"
+            >
+              <Book className="w-8 h-8 sm:w-12 sm:h-12 text-white mx-auto mb-2 group-hover:animate-bounce" />
+              <h3 className="text-white font-bold text-sm sm:text-base">Tutorial</h3>
+              <p className="text-cyan-100 text-xs mt-1">Learn to play</p>
+            </button>
+          </div>
+
+          {/* Secret Cheat Access */}
+          <div className="text-center mt-8">
+            <button
+              onClick={() => setCurrentModal('cheats')}
+              className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              🔓
+            </button>
+          </div>
         </div>
       </div>
 
