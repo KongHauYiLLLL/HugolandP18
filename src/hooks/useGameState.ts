@@ -193,7 +193,9 @@ export const useGameState = () => {
     const interval = setInterval(() => {
       setGameState(prev => {
         const now = new Date();
-        if (now >= prev.yojefMarket.nextRefresh) {
+        const nextRefresh = new Date(prev.yojefMarket.nextRefresh);
+        
+        if (now >= nextRefresh) {
           return {
             ...prev,
             yojefMarket: {
@@ -237,6 +239,17 @@ export const useGameState = () => {
             },
           };
           
+          // Ensure yojefMarket dates are properly converted
+          const yojefMarket = parsedState.yojefMarket ? {
+            items: parsedState.yojefMarket.items || generateYojefMarketItems(),
+            lastRefresh: new Date(parsedState.yojefMarket.lastRefresh || Date.now()),
+            nextRefresh: new Date(parsedState.yojefMarket.nextRefresh || Date.now() + 5 * 60 * 1000),
+          } : {
+            items: generateYojefMarketItems(),
+            lastRefresh: new Date(),
+            nextRefresh: new Date(Date.now() + 5 * 60 * 1000),
+          };
+          
           setGameState({
             ...initialGameState,
             ...parsedState,
@@ -257,11 +270,7 @@ export const useGameState = () => {
             cheats: parsedState.cheats || initialCheats,
             mining: parsedState.mining || initialMining,
             promoCodes: parsedState.promoCodes || initialPromoCodes,
-            yojefMarket: parsedState.yojefMarket || {
-              items: generateYojefMarketItems(),
-              lastRefresh: new Date(),
-              nextRefresh: new Date(Date.now() + 5 * 60 * 1000),
-            },
+            yojefMarket: yojefMarket,
             playerTags: parsedState.playerTags || initializePlayerTags(),
             shinyGems: parsedState.shinyGems || 0,
             inventory: {

@@ -21,7 +21,9 @@ export const YojefMarket: React.FC<YojefMarketProps> = ({
 }) => {
   const [selectedRelic, setSelectedRelic] = useState<RelicItem | null>(null);
 
-  const timeUntilRefresh = Math.max(0, nextRefresh.getTime() - Date.now());
+  // Ensure nextRefresh is a Date object
+  const refreshDate = nextRefresh instanceof Date ? nextRefresh : new Date(nextRefresh);
+  const timeUntilRefresh = Math.max(0, refreshDate.getTime() - Date.now());
   const minutesLeft = Math.floor(timeUntilRefresh / 60000);
   const secondsLeft = Math.floor((timeUntilRefresh % 60000) / 1000);
 

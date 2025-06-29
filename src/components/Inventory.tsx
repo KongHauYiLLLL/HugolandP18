@@ -443,10 +443,18 @@ export const Inventory: React.FC<InventoryProps> = ({
         ].map(({ key, label, count, icon: Icon }) => (
           <button
             key={key}
-            onClick={() => setActiveTab(key as any)}
+            onClick={() => {
+              if (key === 'relics') {
+                onOpenYojefMarket();
+              } else {
+                setActiveTab(key as any);
+              }
+            }}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
               activeTab === key
                 ? 'bg-purple-600 text-white'
+                : key === 'relics'
+                ? 'bg-indigo-600 text-white hover:bg-indigo-500'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
@@ -524,15 +532,6 @@ export const Inventory: React.FC<InventoryProps> = ({
             <p>• <strong>Anvil:</strong> Repair items by merging two identical items</p>
             <p>• <strong>Reset:</strong> Reset items to level 1 but keep ATK/DEF (costs 2 items of same rarity)</p>
             <p>• <strong>Enchanted Items:</strong> 5% chance from chests, double ATK/DEF</p>
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <button
-                onClick={onOpenYojefMarket}
-                className="px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-500 hover:to-purple-500 transition-all text-xs font-semibold flex items-center gap-1"
-              >
-                <Book className="w-3 h-3" />
-                Visit Yojef Market
-              </button>
-            </div>
             <p>• <strong>Relics:</strong> Powerful ancient items from the Yojef Market (max 5 equipped)</p>
           </div>
         </div>
