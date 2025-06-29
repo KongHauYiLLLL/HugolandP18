@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { RelicItem } from '../types/game';
-import { Package, Coins, X, Clock, Sword, Shield } from 'lucide-react';
+import { Package, Gem, X, Clock, Sword, Shield } from 'lucide-react';
 
 interface YojefMarketProps {
   relicItems: RelicItem[];
-  coins: number;
+  gems: number;
   equippedRelicsCount: number;
   onPurchaseRelic: (relicId: string) => boolean;
   onClose: () => void;
@@ -13,7 +13,7 @@ interface YojefMarketProps {
 
 export const YojefMarket: React.FC<YojefMarketProps> = ({
   relicItems,
-  coins,
+  gems,
   equippedRelicsCount,
   onPurchaseRelic,
   onClose,
@@ -35,7 +35,7 @@ export const YojefMarket: React.FC<YojefMarketProps> = ({
     if (success) {
       setSelectedRelic(null);
     } else {
-      alert('Not enough coins!');
+      alert('Not enough gems!');
     }
   };
 
@@ -62,8 +62,8 @@ export const YojefMarket: React.FC<YojefMarketProps> = ({
         <div className="bg-black/30 p-4 rounded-lg mb-6">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Coins className="w-5 h-5 text-yellow-400" />
-              <span className="text-white font-semibold">Your Coins: {coins.toLocaleString()}</span>
+              <Gem className="w-5 h-5 text-purple-400" />
+              <span className="text-white font-semibold">Your Gems: {gems}</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-yellow-400" />
@@ -116,29 +116,29 @@ export const YojefMarket: React.FC<YojefMarketProps> = ({
               </div>
 
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-1 text-yellow-400">
-                  <Coins className="w-4 h-4" />
-                  <span className="font-bold">{(relic.cost ?? 0).toLocaleString()}</span>
+                <div className="flex items-center gap-1 text-purple-400">
+                  <Gem className="w-4 h-4" />
+                  <span className="font-bold">{relic.cost}</span>
                 </div>
                 <span className="text-xs text-gray-400">
-                  Upgrade: {relic.upgradeCost ?? 0} gems
+                  Upgrade: {relic.upgradeCost} gems
                 </span>
               </div>
 
               <button
                 onClick={() => handlePurchase(relic)}
-                disabled={coins < (relic.cost ?? 0) || equippedRelicsCount >= 5}
+                disabled={gems < relic.cost || equippedRelicsCount >= 5}
                 className={`w-full py-2 rounded-lg font-semibold transition-all text-sm ${
-                  coins >= (relic.cost ?? 0) && equippedRelicsCount < 5
+                  gems >= relic.cost && equippedRelicsCount < 5
                     ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500'
                     : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                 }`}
               >
                 {equippedRelicsCount >= 5 
                   ? 'Relic Limit Reached' 
-                  : coins >= (relic.cost ?? 0) 
+                  : gems >= relic.cost 
                     ? 'Purchase Relic' 
-                    : 'Not Enough Coins'
+                    : 'Not Enough Gems'
                 }
               </button>
             </div>
@@ -157,7 +157,6 @@ export const YojefMarket: React.FC<YojefMarketProps> = ({
         <div className="mt-6 text-center text-xs text-gray-500">
           <p>The Yojef Market deals in ancient artifacts of immense power.</p>
           <p>These relics cannot be found in regular chests and hold secrets from forgotten ages.</p>
-          <p className="text-yellow-400 font-semibold mt-2">💰 Relics are now purchased with COINS (10x more expensive!)</p>
         </div>
       </div>
     </div>

@@ -41,15 +41,6 @@ export const useGameState = () => {
               totalSpent: parsedState.research?.hp?.totalSpent || 0,
             },
           };
-
-          // Fix yojefMarket date objects
-          let yojefMarket = parsedState.yojefMarket || initialGameState.yojefMarket;
-          if (yojefMarket.lastRefresh && typeof yojefMarket.lastRefresh === 'string') {
-            yojefMarket.lastRefresh = new Date(yojefMarket.lastRefresh);
-          }
-          if (yojefMarket.nextRefresh && typeof yojefMarket.nextRefresh === 'string') {
-            yojefMarket.nextRefresh = new Date(yojefMarket.nextRefresh);
-          }
           
           setGameState({
             ...initialGameState,
@@ -71,7 +62,7 @@ export const useGameState = () => {
             cheats: parsedState.cheats || initialGameState.cheats,
             mining: parsedState.mining || initialGameState.mining,
             promoCodes: parsedState.promoCodes || initialGameState.promoCodes,
-            yojefMarket: yojefMarket,
+            yojefMarket: parsedState.yojefMarket || initialGameState.yojefMarket,
             playerTags: parsedState.playerTags || initializePlayerTags(),
             shinyGems: parsedState.shinyGems || 0,
             inventory: {
