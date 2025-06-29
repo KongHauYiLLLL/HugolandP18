@@ -111,7 +111,7 @@ export const PokyegMarket: React.FC<PokyegMarketProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-40 p-4">
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
       <div className="bg-gradient-to-br from-red-900/80 via-black/80 to-purple-900/80 p-4 sm:p-6 rounded-lg border-2 border-red-500/50 max-w-4xl w-full max-h-[80vh] overflow-y-auto shadow-2xl shadow-red-500/20">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">

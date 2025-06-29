@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { GameState, PlayerStats, Inventory, Enemy, Weapon, Armor, ChestReward, Research, Achievement, CollectionBook, KnowledgeStreak, GameMode, Statistics, CheatSettings, Mining, RelicItem, PlayerTag, Multipliers } from '../types/game';
+import { GameState, PlayerStats, Inventory, Enemy, Weapon, Armor, ChestReward, Research, Achievement, CollectionBook, KnowledgeStreak, GameMode, Statistics, CheatSettings, Mining, RelicItem, PlayerTag } from '../types/game';
 import { generateWeapon, generateArmor, generateEnemy, generateMythicalWeapon, generateMythicalArmor, calculateResearchBonus, calculateResearchCost, getChestRarityWeights, generateRelicItem, canRepairWithAnvil, repairWithAnvil, canResetItem, resetItem } from '../utils/gameUtils';
 import { checkAchievements, initializeAchievements } from '../utils/achievements';
 import { checkPlayerTags, initializePlayerTags } from '../utils/playerTags';
@@ -107,14 +107,6 @@ const initialPromoCodes = {
   ],
 };
 
-const initialMultipliers: Multipliers = {
-  coins: 1,
-  gems: 1,
-  atk: 1,
-  def: 1,
-  hp: 1,
-};
-
 const generateYojefMarketItems = (): RelicItem[] => {
   const items: RelicItem[] = [];
   const numItems = 3 + Math.floor(Math.random() * 3); // 3-5 items
@@ -152,7 +144,6 @@ const initialGameState: GameState = {
     nextRefresh: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
   },
   playerTags: initializePlayerTags(),
-  multipliers: initialMultipliers,
 };
 
 export const useGameState = () => {
@@ -282,7 +273,6 @@ export const useGameState = () => {
             yojefMarket: yojefMarket,
             playerTags: parsedState.playerTags || initializePlayerTags(),
             shinyGems: parsedState.shinyGems || 0,
-            multipliers: parsedState.multipliers || initialMultipliers,
             inventory: {
               ...initialInventory,
               ...parsedState.inventory,
@@ -535,9 +525,9 @@ export const useGameState = () => {
       const defResearchBonus = calculateResearchBonus(prev.research.def.level);
       const hpResearchBonus = calculateResearchBonus(prev.research.hp.level);
 
-      let atkMultiplier = (1 + (atkResearchBonus / 100)) * prev.multipliers.atk;
-      let defMultiplier = (1 + (defResearchBonus / 100)) * prev.multipliers.def;
-      let hpMultiplier = (1 + (hpResearchBonus / 100)) * prev.multipliers.hp;
+      let atkMultiplier = 1 + (atkResearchBonus / 100);
+      let defMultiplier = 1 + (defResearchBonus / 100);
+      let hpMultiplier = 1 + (hpResearchBonus / 100);
 
       // Apply game mode modifiers
       switch (prev.gameMode.current) {
@@ -595,32 +585,6 @@ export const useGameState = () => {
   const generateCheatItem = useCallback(() => {
     console.log('Generate cheat item functionality not implemented yet');
   }, []);
-
-  const purchaseMultiplier = useCallback((type: keyof Multipliers, cost: { coins: number; gems: number }): boolean => {
-    setGameState(prev => {
-      if (prev.coins < cost.coins || prev.gems < cost.gems) {
-        return prev;
-      }
-
-      triggerVisualEffect('text', { 
-        text: `${type.toUpperCase()} Multiplier Upgraded!`, 
-        color: 'text-green-400' 
-      });
-
-      return {
-        ...prev,
-        coins: prev.coins - cost.coins,
-        gems: prev.gems - cost.gems,
-        multipliers: {
-          ...prev.multipliers,
-          [type]: prev.multipliers[type] + 0.1,
-        },
-      };
-    });
-
-    updatePlayerStats();
-    return true;
-  }, [triggerVisualEffect, updatePlayerStats]);
 
   const mineGem = useCallback((x: number, y: number): { gems: number; shinyGems: number } | null => {
     // This would be called from the Mining component with the gem node data
@@ -1143,7 +1107,7 @@ export const useGameState = () => {
     };
 
     const streakMultiplier = gameState.knowledgeStreak.multiplier;
-    const finalBonusGems = Math.floor(bonusGems * streakMultiplier * gameState.multipliers.gems);
+    const finalBonusGems = Math.floor(bonusGems * streakMultiplier);
 
     setGameState(prev => ({
       ...prev,
@@ -1164,7 +1128,7 @@ export const useGameState = () => {
     checkAndUnlockAchievements();
 
     return chestReward;
-  }, [gameState.coins, gameState.knowledgeStreak.multiplier, gameState.cheats.infiniteCoins, gameState.multipliers.gems, updateCollectionBook, checkAndUnlockAchievements]);
+  }, [gameState.coins, gameState.knowledgeStreak.multiplier, gameState.cheats.infiniteCoins, updateCollectionBook, checkAndUnlockAchievements]);
 
   const purchaseMythical = useCallback((): { item: Weapon | Armor; type: 'weapon' | 'armor' } | null => {
     const MYTHICAL_COST = 50000;
@@ -1273,17 +1237,17 @@ export const useGameState = () => {
           newCombatLog.push(`You defeated the ${prev.currentEnemy.name}!`);
           
           // Handle victory rewards
-          let coinMultiplier = prev.multipliers.coins;
-          let gemMultiplier = prev.multipliers.gems;
+          let coinMultiplier = 1;
+          let gemMultiplier = 1;
           
           switch (prev.gameMode.current) {
             case 'blitz':
-              coinMultiplier *= 1.25;
-              gemMultiplier *= 1.1;
+              coinMultiplier = 1.25;
+              gemMultiplier = 1.1;
               break;
             case 'crazy':
-              coinMultiplier *= 6;
-              gemMultiplier *= 6;
+              coinMultiplier = 6;
+              gemMultiplier = 6;
               break;
           }
 
@@ -1427,6 +1391,5 @@ export const useGameState = () => {
     equipRelic,
     unequipRelic,
     sellRelic,
-    purchaseMultiplier,
   };
 };

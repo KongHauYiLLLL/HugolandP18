@@ -20,7 +20,6 @@ export interface GameState {
   promoCodes: PromoCodeState;
   yojefMarket: YojefMarket;
   playerTags: PlayerTag[];
-  multipliers: Multipliers;
 }
 
 export interface PlayerStats {
@@ -248,12 +247,4 @@ export interface TriviaQuestion {
   correctAnswer: number | string;
   category: string;
   difficulty: 'easy' | 'medium' | 'hard';
-}
-
-export interface Multipliers {
-  coins: number;
-  gems: number;
-  atk: number;
-  def: number;
-  hp: number;
 }

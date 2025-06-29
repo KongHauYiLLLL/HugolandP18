@@ -1,18 +1,16 @@
 import React from 'react';
 import { GameMode } from '../types/game';
-import { Zap, Heart, Clock, X, Sword, Skull, RotateCcw } from 'lucide-react';
+import { Zap, Heart, Clock, X, Sword, Skull } from 'lucide-react';
 
-interface SettingsModalProps {
+interface GameModeSelectorProps {
   currentMode: GameMode;
   onSelectMode: (mode: 'normal' | 'blitz' | 'bloodlust' | 'crazy') => void;
-  onResetGame: () => void;
   onClose: () => void;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ 
+export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ 
   currentMode, 
   onSelectMode, 
-  onResetGame,
   onClose 
 }) => {
   const modes = [
@@ -81,12 +79,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-40 p-4">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-gradient-to-br from-gray-900 to-slate-900 p-4 sm:p-6 rounded-lg border border-gray-500/50 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-white font-bold text-lg sm:text-xl">Game Settings</h2>
-            <p className="text-gray-300 text-sm">Configure your adventure</p>
+            <h2 className="text-white font-bold text-lg sm:text-xl">Select Game Mode</h2>
+            <p className="text-gray-300 text-sm">Choose your adventure style</p>
           </div>
           <button
             onClick={onClose}
@@ -96,69 +94,50 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
         </div>
 
-        {/* Game Modes Section */}
-        <div className="mb-8">
-          <h3 className="text-white font-bold text-lg mb-4">Game Modes</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {modes.map((mode) => {
-              const isSelected = currentMode.current === mode.id;
-              const colorClasses = getColorClasses(mode.color, isSelected);
-              const Icon = mode.icon;
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {modes.map((mode) => {
+            const isSelected = currentMode.current === mode.id;
+            const colorClasses = getColorClasses(mode.color, isSelected);
+            const Icon = mode.icon;
 
-              return (
-                <div
-                  key={mode.id}
-                  className={`p-4 sm:p-6 rounded-lg border-2 transition-all ${colorClasses.border} ${colorClasses.bg}`}
-                >
-                  <div className="text-center mb-4">
-                    <Icon className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 ${colorClasses.text}`} />
-                    <h3 className={`font-bold text-lg sm:text-xl ${colorClasses.text}`}>
-                      {mode.name}
-                    </h3>
-                    <p className="text-gray-300 text-sm mt-2">
-                      {mode.description}
-                    </p>
-                  </div>
-
-                  <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                    {mode.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2 sm:gap-3">
-                        <div className={`w-2 h-2 rounded-full ${colorClasses.text.replace('text-', 'bg-')}`} />
-                        <span className="text-gray-300 text-sm sm:text-base">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => onSelectMode(mode.id)}
-                    disabled={isSelected}
-                    className={`w-full py-2 sm:py-3 rounded-lg font-semibold text-white transition-all text-sm sm:text-base ${
-                      isSelected
-                        ? 'bg-gray-600 cursor-not-allowed'
-                        : colorClasses.button
-                    }`}
-                  >
-                    {isSelected ? 'Current Mode' : 'Select Mode'}
-                  </button>
+            return (
+              <div
+                key={mode.id}
+                className={`p-4 sm:p-6 rounded-lg border-2 transition-all ${colorClasses.border} ${colorClasses.bg}`}
+              >
+                <div className="text-center mb-4">
+                  <Icon className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 ${colorClasses.text}`} />
+                  <h3 className={`font-bold text-lg sm:text-xl ${colorClasses.text}`}>
+                    {mode.name}
+                  </h3>
+                  <p className="text-gray-300 text-sm mt-2">
+                    {mode.description}
+                  </p>
                 </div>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Reset Game Section */}
-        <div className="bg-red-900/20 border border-red-500/30 p-4 rounded-lg">
-          <h3 className="text-red-400 font-bold text-lg mb-3">Danger Zone</h3>
-          <p className="text-gray-300 text-sm mb-4">
-            Reset your entire game progress. This action cannot be undone!
-          </p>
-          <button
-            onClick={onResetGame}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Reset Game
-          </button>
+                <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+                  {mode.features.map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2 sm:gap-3">
+                      <div className={`w-2 h-2 rounded-full ${colorClasses.text.replace('text-', 'bg-')}`} />
+                      <span className="text-gray-300 text-sm sm:text-base">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => onSelectMode(mode.id)}
+                  disabled={isSelected}
+                  className={`w-full py-2 sm:py-3 rounded-lg font-semibold text-white transition-all text-sm sm:text-base ${
+                    isSelected
+                      ? 'bg-gray-600 cursor-not-allowed'
+                      : colorClasses.button
+                  }`}
+                >
+                  {isSelected ? 'Current Mode' : 'Select Mode'}
+                </button>
+              </div>
+            );
+          })}
         </div>
 
         {/* Current Mode Info */}
