@@ -251,7 +251,7 @@ export const getChestRarityWeights = (chestCost: number): number[] => {
   } else if (chestCost >= 400) {
     // Epic chest - guaranteed epic or better
     return [0, 0, 60, 30, 10];
-  } else if (chestCost >= 150) {
+  } else if (chestCost >= 200) {
     // Rare chest - guaranteed rare or better
     return [0, 50, 35, 13, 2];
   } else {
@@ -314,25 +314,6 @@ export const repairWithAnvil = (item1: Weapon | Armor, item2: Weapon | Armor): W
     item1.durability + item2.durability
   );
   return repairedItem;
-};
-
-export const canResetItem = (items: (Weapon | Armor)[], targetItem: Weapon | Armor): boolean => {
-  const sameTypeAndRarity = items.filter(item => 
-    item.rarity === targetItem.rarity &&
-    ('baseAtk' in item) === ('baseAtk' in targetItem) &&
-    item.id !== targetItem.id
-  );
-  return sameTypeAndRarity.length >= 2;
-};
-
-export const resetItem = (targetItem: Weapon | Armor): Weapon | Armor => {
-  const resetItem = { ...targetItem };
-  resetItem.durability = resetItem.maxDurability;
-  resetItem.level = 1;
-  resetItem.upgradeCost = ('baseAtk' in resetItem) ? 
-    { common: 5, rare: 10, epic: 20, legendary: 40, mythical: 50 }[resetItem.rarity] :
-    { common: 5, rare: 10, epic: 20, legendary: 40, mythical: 50 }[resetItem.rarity];
-  return resetItem;
 };
 
 export const getRepairCost = (item: Weapon | Armor): number => {
