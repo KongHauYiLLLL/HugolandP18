@@ -96,7 +96,7 @@ export const generateWeapon = (forceChroma = false, forceRarity?: string, forceE
     baseAtk *= 2;
   }
   
-  const sellPrice = Math.floor(baseAtk * 0.5);
+  const sellPrice = Math.floor(baseAtk * 0.5); // 25% of original cost calculation
   const maxDurability = getDurabilityByRarity(rarity);
 
   return {
@@ -153,7 +153,7 @@ export const generateArmor = (forceChroma = false, forceRarity?: string, forceEn
     baseDef *= 2;
   }
   
-  const sellPrice = Math.floor(baseDef * 0.75);
+  const sellPrice = Math.floor(baseDef * 0.75); // 25% of original cost calculation
   const maxDurability = getDurabilityByRarity(rarity);
 
   return {
@@ -204,17 +204,6 @@ export const generateRelicItem = (): RelicItem => {
   }
 };
 
-export const generateYojefMarketItems = (): RelicItem[] => {
-  const items: RelicItem[] = [];
-  const numItems = 3 + Math.floor(Math.random() * 3); // 3-5 items
-  
-  for (let i = 0; i < numItems; i++) {
-    items.push(generateRelicItem());
-  }
-  
-  return items;
-};
-
 export const generateMythicalWeapon = (): Weapon => {
   return generateWeapon(false, 'mythical');
 };
@@ -260,7 +249,7 @@ export const getChestRarityWeights = (chestCost: number): number[] => {
   } else if (chestCost >= 400) {
     // Epic chest - guaranteed epic or better
     return [0, 0, 60, 30, 10];
-  } else if (chestCost >= 200) {
+  } else if (chestCost >= 150) {
     // Rare chest - guaranteed rare or better
     return [0, 50, 35, 13, 2];
   } else {
